@@ -1,8 +1,7 @@
+use crate::{helper::*, NowPlaying};
 use owo_colors::OwoColorize;
 use reqwest::Client;
 use std::error::Error;
-
-use crate::{helper::*, NowPlaying};
 
 pub async fn play() -> Result<String, Box<dyn Error>> {
     Client::new()
@@ -96,6 +95,7 @@ async fn parse_volume(amount: impl ToString) -> Result<impl ToString, Box<dyn Er
         let current = (NowPlaying::get().await?.volume * 100.0) as u32;
         let res = current + amount.trim_start_matches('+').parse::<u32>()?;
         Ok(res.to_string())
+    // this gets parsed as an arg which can be bypassed by preceeding it with "--". i'm not sure if there is a nicer way to do this or not.
     } else if amount.starts_with('-') {
         let current = (NowPlaying::get().await?.volume * 100.0) as u32;
         let res = current - amount.trim_start_matches('-').parse::<u32>()?;

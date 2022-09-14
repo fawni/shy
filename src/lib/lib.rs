@@ -1,14 +1,14 @@
-use std::error::Error;
-
 use helper::*;
 use reqwest::Client;
 use serde::Deserialize;
+use std::error::Error;
 
 mod helper;
 
 pub mod command;
 pub mod queue;
 
+// todo: autodetect the port (%appdata%/MusicBee/WWWServerconfig.xml)
 static MUSICBEE_REST_URL: &str = "http://localhost:8080";
 
 #[allow(dead_code)]
