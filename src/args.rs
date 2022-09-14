@@ -1,4 +1,4 @@
-use clap::Command;
+use clap::{Arg, Command};
 
 pub fn get_app() -> Command<'static> {
     Command::new("shy")
@@ -28,5 +28,12 @@ pub fn get_app() -> Command<'static> {
             Command::new("nowplaying")
                 .about("Print information about the current track")
                 .visible_alias("np"),
+        )
+        .subcommand(
+            Command::new("volume")
+                .about("Modify player volume")
+                .visible_alias("vol")
+                .visible_alias("v")
+                .arg(Arg::new("amount").takes_value(true)),
         )
 }

@@ -2,42 +2,45 @@ use std::error::Error;
 
 use helper::*;
 use reqwest::Client;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 mod helper;
 
 pub mod control;
 pub mod queue;
 
-static MUSICBEE_REST_URL: &str = "http://localhost:5454";
+static MUSICBEE_REST_URL: &str = "http://localhost:8080";
 
-#[derive(Serialize, Deserialize)]
-pub(crate) struct NowPlaying {
+#[allow(dead_code)]
+#[derive(Deserialize)]
+struct NowPlaying {
     #[serde(rename = "Album")]
-    pub(crate) album: String,
+    album: String,
     #[serde(rename = "Artist")]
-    pub(crate) artist: String,
+    artist: String,
     #[serde(rename = "Title")]
-    pub(crate) title: String,
-    pub(crate) position: u32,
-    pub(crate) duration: u32,
-    pub(crate) file: String,
-    pub(crate) playing: String,
-    pub(crate) queued: bool,
-    pub(crate) repeat: String,
-    pub(crate) scrobbling: bool,
-    pub(crate) shuffle: bool,
-    pub(crate) volume: f32,
+    title: String,
+    position: u32,
+    duration: u32,
+    file: String,
+    playing: String,
+    queued: bool,
+    repeat: String,
+    scrobbling: bool,
+    shuffle: bool,
+    volume: f32,
 }
 
-pub(crate) async fn np() -> Result<NowPlaying, Box<dyn Error>> {
-    let body = Client::new()
-        .get(format_url("NP"))
-        .send()
-        .await?
-        .text()
-        .await?;
+impl NowPlaying {
+    async fn get() -> Result<NowPlaying, Box<dyn Error>> {
+        let body = Client::new()
+            .get(format_url("NP"))
+            .send()
+            .await?
+            .text()
+            .await?;
+        let np: NowPlaying = serde_json::from_str(&body)?;
 
-    let np: NowPlaying = serde_json::from_str(&body)?;
-    Ok(np)
+        Ok(np)
+    }
 }
