@@ -1,5 +1,5 @@
 use clap::ArgMatches;
-use shy::{control, queue};
+use shy::{command, queue};
 use std::error::Error;
 
 mod args;
@@ -22,24 +22,24 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 
 async fn play() -> Result<(), Box<dyn Error>> {
-    let res = control::play().await?;
+    let res = command::play().await?;
     println!("{}", res);
     Ok(())
 }
 
 async fn stop() -> Result<(), Box<dyn Error>> {
-    control::stop().await?;
+    command::stop().await?;
     Ok(())
 }
 
 async fn next() -> Result<(), Box<dyn Error>> {
-    let res = control::next().await?;
+    let res = command::next().await?;
     println!("{}", res);
     Ok(())
 }
 
 async fn previous() -> Result<(), Box<dyn Error>> {
-    let res = control::previous().await?;
+    let res = command::previous().await?;
     println!("{}", res);
     Ok(())
 }
@@ -53,7 +53,7 @@ async fn volume(matches: &ArgMatches) -> Result<(), Box<dyn Error>> {
         }
     };
 
-    control::volume(amount).await?;
+    command::volume(amount).await?;
     Ok(())
 }
 

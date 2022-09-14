@@ -6,7 +6,7 @@ use serde::Deserialize;
 
 mod helper;
 
-pub mod control;
+pub mod command;
 pub mod queue;
 
 static MUSICBEE_REST_URL: &str = "http://localhost:8080";
