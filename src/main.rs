@@ -52,7 +52,6 @@ async fn volume(matches: &ArgMatches) -> Result<(), Box<dyn Error>> {
             return Ok(());
         }
     };
-
     command::volume(amount).await?;
     Ok(())
 }

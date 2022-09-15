@@ -1,4 +1,4 @@
-use crate::NowPlaying;
+use crate::{helper::parse_duration, NowPlaying};
 use owo_colors::OwoColorize;
 use std::error::Error;
 
@@ -23,17 +23,4 @@ pub async fn volume() -> Result<String, Box<dyn Error>> {
     let volume = ((np.volume * 100.0) as u32).to_string();
 
     Ok(volume)
-}
-
-fn parse_duration(mut d: u32) -> String {
-    d /= 1000;
-    match (d / 60) / 60 {
-        0 => format!("{:02}:{:02}", ((d / 60) % 60), (d % 60)),
-        _ => format!(
-            "{:02}:{:02}:{:02}",
-            ((d / 60) / 60),
-            ((d / 60) % 60),
-            (d % 60)
-        ),
-    }
 }
