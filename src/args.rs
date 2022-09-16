@@ -34,6 +34,10 @@ pub fn get_app() -> Command<'static> {
                 .about("Modify player volume")
                 .visible_alias("vol")
                 .visible_alias("v")
-                .arg(Arg::new("amount").takes_value(true)),
+                .arg(
+                    Arg::new("amount")
+                        .takes_value(true)
+                        .allow_hyphen_values(true),
+                ),
         )
 }

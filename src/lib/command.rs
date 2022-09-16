@@ -95,7 +95,6 @@ async fn parse_volume(amount: impl ToString) -> Result<impl ToString, Box<dyn Er
         let current = (NowPlaying::new().await?.volume * 100.0) as u32;
         let res = current + amount.trim_start_matches('+').parse::<u32>()?;
         Ok(res.to_string())
-    // this gets parsed as an arg which can be bypassed by preceeding it with "--". i'm not sure if there is a nicer way to do this or not.
     } else if amount.starts_with('-') {
         let current = (NowPlaying::new().await?.volume * 100.0) as u32;
         let res = current - amount.trim_start_matches('-').parse::<u32>()?;
