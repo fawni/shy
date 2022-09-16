@@ -55,7 +55,10 @@ pub async fn volume(amount: impl ToString) -> Result<String, Box<dyn Error>> {
         ))
         .send()
         .await?;
-    let res = format!("Changed volume to {}", NowPlaying::new().await?.volume);
+    let res = format!(
+        "Changed volume to {}%",
+        NowPlaying::new().await?.volume * 100.0
+    );
 
     Ok(res)
 }
@@ -68,9 +71,8 @@ pub async fn seek(amount: impl ToString) -> Result<String, Box<dyn Error>> {
         ))
         .send()
         .await?;
-    let res = format!("Changed volume to {}", NowPlaying::new().await?.volume);
 
-    Ok(res)
+    Ok("Seeked!".to_string())
 }
 
 async fn parse_volume(input: impl ToString) -> Result<impl ToString, Box<dyn Error>> {

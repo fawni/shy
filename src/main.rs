@@ -55,16 +55,18 @@ async fn volume(matches: &ArgMatches) -> Result<(), Box<dyn Error>> {
     let amount = match matches.value_of("amount") {
         Some(amount) => amount,
         None => {
-            println!("Current volume: {}", queue::volume().await?);
+            println!("Current volume: {}%", queue::volume().await?);
             return Ok(());
         }
     };
-    command::volume(amount).await?;
+    let res = command::volume(amount).await?;
+    println!("{}", res);
     Ok(())
 }
 
 async fn seek(matches: &ArgMatches) -> Result<(), Box<dyn Error>> {
     let amount = matches.value_of("amount").unwrap();
-    command::seek(amount).await?;
+    let res = command::seek(amount).await?;
+    println!("{}", res);
     Ok(())
 }
