@@ -126,9 +126,10 @@ async fn parse_position(input: impl ToString) -> Result<impl ToString, Box<dyn E
             let amount = amount.trim_start_matches('-').parse::<u32>()? * 1000;
             let res = pos - amount;
             Ok(res.to_string())
-        // 5 (will treat as 5% anyway)
+        // 5 (treated the same as +5)
         } else {
-            let res = (total * amount.parse::<u32>()?) / 100;
+            let amount = amount.parse::<u32>()? * 1000;
+            let res = pos + amount;
             Ok(res.to_string())
         }
     }
