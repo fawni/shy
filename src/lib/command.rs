@@ -1,5 +1,4 @@
 use crate::{helper::*, NowPlaying};
-use owo_colors::OwoColorize;
 use reqwest::Client;
 use std::error::Error;
 
@@ -19,7 +18,7 @@ pub async fn play() -> Result<String, Box<dyn Error>> {
 pub async fn stop() -> Result<String, Box<dyn Error>> {
     Client::new().get(format_url("C_STOP")).send().await?;
     let np = NowPlaying::new().await?;
-    let res = format!("STOPPED | {} by {}", np.title.bold(), np.artist,);
+    let res = format!("STOPPED | {} by {}", np.title, np.artist,);
 
     Ok(res)
 }
