@@ -1,6 +1,6 @@
 [package]
 name = "shy"
-version = "0.2.1"
+version = "0.2.2"
 description = "A command line remote controller for MusicBee"
 authors = ["obscurity <z@x4.pm>"]
 license = "OSL-3.0"
