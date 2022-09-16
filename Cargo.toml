@@ -21,3 +21,8 @@ path = "src/lib/lib.rs"
 [[bin]]
 name = "shy"
 path = "src/main.rs"
+
+[profile.release]
+lto = true
+strip = true
+codegen-units = 1
