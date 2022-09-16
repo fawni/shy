@@ -3,7 +3,7 @@ use owo_colors::OwoColorize;
 use std::error::Error;
 
 pub async fn nowplaying() -> Result<String, Box<dyn Error>> {
-    let np = NowPlaying::get().await?;
+    let np = NowPlaying::new().await?;
     let current = np.position;
     let total = np.duration;
 
@@ -19,7 +19,7 @@ pub async fn nowplaying() -> Result<String, Box<dyn Error>> {
 }
 
 pub async fn volume() -> Result<String, Box<dyn Error>> {
-    let np = NowPlaying::get().await?;
+    let np = NowPlaying::new().await?;
     let volume = ((np.volume * 100.0) as u32).to_string();
 
     Ok(volume)

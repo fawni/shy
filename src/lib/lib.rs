@@ -32,7 +32,7 @@ struct NowPlaying {
 }
 
 impl NowPlaying {
-    async fn get() -> Result<NowPlaying, Box<dyn Error>> {
+    async fn new() -> Result<NowPlaying, Box<dyn Error>> {
         let body = Client::new()
             .get(format_url("NP"))
             .send()
