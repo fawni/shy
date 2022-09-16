@@ -41,7 +41,7 @@ pub fn get_app() -> Command<'static> {
                 ),
         )
         .subcommand(
-            Command::new("seek").about("Seek track").arg(
+            Command::new("seek").about("Seek playback").arg(
                 Arg::new("amount")
                     .required(true)
                     .takes_value(true)

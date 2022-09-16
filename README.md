@@ -29,7 +29,7 @@ SUBCOMMANDS:
     nowplaying    Print information about the current track [aliases: np]
     play          Play/pause the current track [aliases: pause, p]
     previous      Play the previous track in the queue [aliases: b]
-    seek          Seek track
+    seek          Seek playback
     stop          Stop playback [aliases: s]
     volume        Modify player volume [aliases: vol, v]
 ```
