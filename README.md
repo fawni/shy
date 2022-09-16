@@ -37,7 +37,7 @@ Most subcommands have aliases which are the recommended way of usage.
 
 ```sh
 shy np # print now playing
-shy v +10 | 80 # increase volume by 10 points | set volume to 80
+shy v +10 | 80 | -40 # increase volume by 10 points | set volume to 80 | decrease volume by 40
 ```
 
 ## Implemented
