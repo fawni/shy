@@ -4,6 +4,13 @@ pub fn get_app() -> Command<'static> {
     Command::new("shy")
         .version(env!("CARGO_PKG_VERSION"))
         .subcommand(
+            Command::new("add")
+                .about("Add a track to queue")
+                .visible_alias("queue")
+                .visible_alias("a")
+                .arg(Arg::new("track").takes_value(true).multiple_values(true)),
+        )
+        .subcommand(
             Command::new("play")
                 .about("Play/pause the current track")
                 .visible_alias("pause")

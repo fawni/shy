@@ -14,7 +14,7 @@ cargo install --git https://github.com/x6r/shy
 
 ```
 $ shy --help
-shy 0.2.0
+shy 0.3.0
 
 USAGE:
     shy.exe [SUBCOMMAND]
@@ -24,6 +24,7 @@ OPTIONS:
     -V, --version    Print version information
 
 SUBCOMMANDS:
+    add           Add a track to queue [aliases: queue, a]
     help          Print this message or the help of the given subcommand(s)
     next          Play the next track in the queue [aliases: n]
     nowplaying    Print information about the current track [aliases: np]
@@ -40,6 +41,7 @@ Most subcommands have aliases which are the recommended way of usage.
 shy np # print now playing
 shy v +10 | 80 | -40 # increase volume by 10 points | set volume to 80 | decrease volume by 40
 shy seek 5 | 70% | -20% # seek 5 seconds | set position to 70% | go back 20%
+shy a path/to/track.mp3 track.flac path/to/album # adds track.mp3, track.flac and every file in directory "album" to queue
 ```
 
 ## Implemented
@@ -56,7 +58,7 @@ shy seek 5 | 70% | -20% # seek 5 seconds | set position to 70% | go back 20%
   - [ ] Scrobble
 - [x] Now playing
 - [ ] List playlist
-- [ ] Add to queue
+- [x] Add to queue
 - [ ] Album art to file
 
 ## License

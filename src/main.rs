@@ -7,6 +7,7 @@ mod args;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     match args::get_app().get_matches().subcommand() {
+        Some(("add", cmd)) => add(cmd).await,
         Some(("nowplaying", _)) => now_playing().await,
         Some(("play", _)) => play().await,
         Some(("stop", _)) => stop().await,
@@ -22,15 +23,23 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
 }
 
+async fn add(matches: &ArgMatches) -> Result<(), Box<dyn Error>> {
+    let paths = matches.get_many::<String>("track").unwrap();
+    for path in paths {
+        command::add(path).await?;
+    }
+    Ok(())
+}
+
 async fn now_playing() -> Result<(), Box<dyn Error>> {
     let res = queue::nowplaying().await?;
-    println!("{}", res);
+    println!("{res}");
     Ok(())
 }
 
 async fn play() -> Result<(), Box<dyn Error>> {
     let res = command::play().await?;
-    println!("{}", res);
+    println!("{res}");
     Ok(())
 }
 
@@ -41,18 +50,18 @@ async fn stop() -> Result<(), Box<dyn Error>> {
 
 async fn next() -> Result<(), Box<dyn Error>> {
     let res = command::next().await?;
-    println!("{}", res);
+    println!("{res}");
     Ok(())
 }
 
 async fn previous() -> Result<(), Box<dyn Error>> {
     let res = command::previous().await?;
-    println!("{}", res);
+    println!("{res}");
     Ok(())
 }
 
 async fn volume(matches: &ArgMatches) -> Result<(), Box<dyn Error>> {
-    let amount = match matches.value_of("amount") {
+    let amount = match matches.get_one::<String>("amount") {
         Some(amount) => amount,
         None => {
             println!("Current volume: {}%", queue::volume().await?);
@@ -60,13 +69,13 @@ async fn volume(matches: &ArgMatches) -> Result<(), Box<dyn Error>> {
         }
     };
     let res = command::volume(amount).await?;
-    println!("{}", res);
+    println!("{res}");
     Ok(())
 }
 
 async fn seek(matches: &ArgMatches) -> Result<(), Box<dyn Error>> {
-    let amount = matches.value_of("amount").unwrap();
+    let amount = matches.get_one::<String>("amount").unwrap();
     let res = command::seek(amount).await?;
-    println!("{}", res);
+    println!("{res}");
     Ok(())
 }

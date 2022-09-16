@@ -1,6 +1,6 @@
 [package]
 name = "shy"
-version = "0.2.3"
+version = "0.3.0"
 description = "A command line remote controller for MusicBee"
 authors = ["obscurity <z@x4.pm>"]
 license = "OSL-3.0"
@@ -13,6 +13,7 @@ owo-colors = "3.5"
 reqwest = "0.11"
 serde = {version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+urlencoding = "2.1"
 
 [lib]
 name = "shy"

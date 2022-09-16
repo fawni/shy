@@ -1,6 +1,20 @@
 use crate::{helper::*, NowPlaying};
 use reqwest::Client;
-use std::error::Error;
+use std::{error::Error, fs};
+
+pub async fn add(path: impl ToString) -> Result<(), Box<dyn Error>> {
+    if fs::metadata(path.to_string())?.is_dir() {
+        let files = fs::read_dir(path.to_string())?;
+        for file in files {
+            let path = file?.path();
+            add_file(path.display()).await?;
+        }
+    } else {
+        add_file(path).await?;
+    }
+
+    Ok(())
+}
 
 pub async fn play() -> Result<String, Box<dyn Error>> {
     Client::new().get(format_url("C_PP")).send().await?;
@@ -135,4 +149,18 @@ async fn parse_position(input: impl ToString) -> Result<impl ToString, Box<dyn E
             Ok(res.to_string())
         }
     }
+}
+
+async fn add_file(path: impl ToString) -> Result<(), Box<dyn Error>> {
+    let absolute_path = fs::canonicalize(path.to_string())?;
+    let absolute = absolute_path.to_str().unwrap().trim_start_matches(r"\\?\");
+    let encoded = urlencoding::encode(absolute);
+
+    // returns an error when it shouldnt so just ignore error lole, https://github.com/hyperium/hyper/issues/2136
+    _ = Client::new()
+        .get(format_url_path("ADDITEM", &encoded))
+        .send()
+        .await;
+
+    Ok(())
 }

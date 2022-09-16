@@ -26,19 +26,22 @@ pub async fn volume() -> Result<String, Box<dyn Error>> {
 fn pb(pos: u32, total: u32) -> String {
     const BAR_LENGTH: usize = 25;
     let (c, t) = (pos as usize, total as usize);
-    let p = max((c * BAR_LENGTH) / t, 1);
+    let mut p = max((c * BAR_LENGTH) / t, 1);
+    if c == 0 {
+        p = 0
+    };
     let l = BAR_LENGTH - p;
 
     format!("{}{}", "━".repeat(p).red(), "━".repeat(l).bright_black())
 }
 
 fn format_info(np: NowPlaying) -> String {
-    let t_h = np.duration / 1000 / 60 / 60;
-    let p_h = np.position / 1000 / 60 / 60;
+    let total_hours = np.duration / 1000 / 60 / 60;
+    let played_hours = np.position / 1000 / 60 / 60;
 
     // guhhhhhhhhhhhhhhh
-    if t_h > 0 {
-        if p_h > 0 {
+    if total_hours > 0 {
+        if played_hours > 0 {
             format!(
                 "{:^43.43}\n{:^43.43}",
                 np.title.bold(),
