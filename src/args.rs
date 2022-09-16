@@ -40,4 +40,12 @@ pub fn get_app() -> Command<'static> {
                         .allow_hyphen_values(true),
                 ),
         )
+        .subcommand(
+            Command::new("seek").about("Seek track").arg(
+                Arg::new("amount")
+                    .required(true)
+                    .takes_value(true)
+                    .allow_hyphen_values(true),
+            ),
+        )
 }

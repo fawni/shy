@@ -47,7 +47,7 @@ shy v +10 | 80 | -40 # increase volume by 10 points | set volume to 80 | decreas
   - [x] Next
   - [x] Previous
   - [x] Stop
-  - [ ] Seek
+  - [x] Seek
   - [x] Volume
   - [ ] Shuffle
   - [ ] Repeat
