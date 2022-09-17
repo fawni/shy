@@ -37,7 +37,7 @@ SUBCOMMANDS:
 
 Most subcommands have aliases which are the recommended way of usage.
 
-> _'|' in the following examples represents "or"_
+> _`|` in the following examples represents or_
 
 ```sh
 shy np # print now playing
