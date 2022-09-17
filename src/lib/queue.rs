@@ -1,4 +1,4 @@
-use crate::{helper::parse_duration, NowPlaying};
+use crate::{format, helper::*, NowPlaying};
 use owo_colors::OwoColorize;
 use std::{cmp::max, error::Error};
 
@@ -10,7 +10,7 @@ pub async fn nowplaying() -> Result<String, Box<dyn Error>> {
         parse_duration(pos),
         pb(pos, total),
         parse_duration(total),
-        format_info(np),
+        format::info(np),
     );
 
     Ok(res)
@@ -26,39 +26,12 @@ pub async fn volume() -> Result<String, Box<dyn Error>> {
 fn pb(pos: u32, total: u32) -> String {
     const BAR_LENGTH: usize = 25;
     let (c, t) = (pos as usize, total as usize);
-    let mut p = max((c * BAR_LENGTH) / t, 1);
-    if c == 0 {
-        p = 0
+    let p = if c == 0 {
+        c
+    } else {
+        max((c * BAR_LENGTH) / t, 1)
     };
     let l = BAR_LENGTH - p;
 
     format!("{}{}", "━".repeat(p).red(), "━".repeat(l).bright_black())
-}
-
-fn format_info(np: NowPlaying) -> String {
-    let total_hours = np.duration / 1000 / 60 / 60;
-    let played_hours = np.position / 1000 / 60 / 60;
-
-    // guhhhhhhhhhhhhhhh
-    if total_hours > 0 {
-        if played_hours > 0 {
-            format!(
-                "{:^43.43}\n{:^43.43}",
-                np.title.bold(),
-                np.artist.bright_black()
-            )
-        } else {
-            format!(
-                "{:^40.40}\n{:^40.40}",
-                np.title.bold(),
-                np.artist.bright_black()
-            )
-        }
-    } else {
-        format!(
-            "{:^37.37}\n{:^37.37}",
-            np.title.bold(),
-            np.artist.bright_black()
-        )
-    }
 }

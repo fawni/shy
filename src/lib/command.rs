@@ -1,6 +1,6 @@
-use crate::{helper::*, NowPlaying};
+use crate::{format, helper::*, log, NowPlaying};
 use reqwest::Client;
-use std::{error::Error, fs};
+use std::{error::Error, fs, path::Path};
 
 pub async fn add(path: impl ToString) -> Result<(), Box<dyn Error>> {
     if fs::metadata(path.to_string())?.is_dir() {
@@ -17,7 +17,7 @@ pub async fn add(path: impl ToString) -> Result<(), Box<dyn Error>> {
 }
 
 pub async fn play() -> Result<String, Box<dyn Error>> {
-    Client::new().get(format_url("C_PP")).send().await?;
+    Client::new().get(format::url("C_PP")).send().await?;
     let np = NowPlaying::new().await?;
     let res = format!(
         "{} | {} by {}",
@@ -30,7 +30,7 @@ pub async fn play() -> Result<String, Box<dyn Error>> {
 }
 
 pub async fn stop() -> Result<String, Box<dyn Error>> {
-    Client::new().get(format_url("C_STOP")).send().await?;
+    Client::new().get(format::url("C_STOP")).send().await?;
     let np = NowPlaying::new().await?;
     let res = format!("STOPPED | {} by {}", np.title, np.artist,);
 
@@ -39,7 +39,7 @@ pub async fn stop() -> Result<String, Box<dyn Error>> {
 
 pub async fn next() -> Result<String, Box<dyn Error>> {
     let old = NowPlaying::new().await?;
-    Client::new().get(format_url("C_NEXT")).send().await?;
+    Client::new().get(format::url("C_NEXT")).send().await?;
     let np = NowPlaying::new().await?;
     let res = format!(
         "SKIPPED | {} by {}\nPLAYING | {} by {}",
@@ -51,7 +51,7 @@ pub async fn next() -> Result<String, Box<dyn Error>> {
 
 pub async fn previous() -> Result<String, Box<dyn Error>> {
     let old = NowPlaying::new().await?;
-    Client::new().get(format_url("C_PREV")).send().await?;
+    Client::new().get(format::url("C_PREV")).send().await?;
     let np = NowPlaying::new().await?;
     let res = format!(
         "SKIPPED | {} by {}\nPLAYING | {} by {}",
@@ -63,7 +63,7 @@ pub async fn previous() -> Result<String, Box<dyn Error>> {
 
 pub async fn volume(amount: impl ToString) -> Result<String, Box<dyn Error>> {
     Client::new()
-        .get(format_url_path(
+        .get(format::url_path(
             "C_VOL",
             parse_volume(amount.to_string()).await?,
         ))
@@ -79,7 +79,7 @@ pub async fn volume(amount: impl ToString) -> Result<String, Box<dyn Error>> {
 
 pub async fn seek(amount: impl ToString) -> Result<String, Box<dyn Error>> {
     Client::new()
-        .get(format_url_path(
+        .get(format::url_path(
             "C_SEEK",
             parse_position(amount.to_string()).await?,
         ))
@@ -89,76 +89,18 @@ pub async fn seek(amount: impl ToString) -> Result<String, Box<dyn Error>> {
     Ok("Seeked!".to_string())
 }
 
-async fn parse_volume(input: impl ToString) -> Result<impl ToString, Box<dyn Error>> {
-    let amount = input.to_string();
-    let volume = NowPlaying::new().await?.volume;
-    if amount.starts_with('+') {
-        let current = (volume * 100.0) as u32;
-        let res = current + amount.trim_start_matches('+').parse::<u32>()?;
-        Ok(res.to_string())
-    } else if amount.starts_with('-') {
-        let current = (volume * 100.0) as u32;
-        let res = current - amount.trim_start_matches('-').parse::<u32>()?;
-        Ok(res.to_string())
-    } else {
-        Ok(amount)
-    }
-}
-
-async fn parse_position(input: impl ToString) -> Result<impl ToString, Box<dyn Error>> {
-    let amount = input.to_string();
-    let np = NowPlaying::new().await?;
-    let (pos, total) = (np.position, np.duration);
-    if amount.ends_with('%') {
-        let percentage = amount.trim_end_matches('%');
-        // +5%
-        if percentage.starts_with('+') {
-            let amount = percentage.trim_start_matches('+').parse::<u32>()?;
-            let current = (pos / total) * 100;
-            let desired = current + amount;
-            let res = (desired * total) / 100;
-            Ok(res.to_string())
-        // -5%
-        } else if percentage.starts_with('-') {
-            let amount = percentage.trim_start_matches('-').parse::<u32>()?;
-            let current = (pos / total) * 100;
-            let desired = current - amount;
-            let res = (desired * total) / 100;
-            Ok(res.to_string())
-        // 5%
-        } else {
-            let amount = percentage.parse::<u32>()?;
-            let res = (total * amount) / 100;
-            Ok(res.to_string())
-        }
-    } else {
-        // +5 (seconds)
-        if amount.starts_with('+') {
-            let amount = amount.trim_start_matches('+').parse::<u32>()? * 1000;
-            let res = pos + amount;
-            Ok(res.to_string())
-        // -5 (seconds)
-        } else if amount.starts_with('-') {
-            let amount = amount.trim_start_matches('-').parse::<u32>()? * 1000;
-            let res = pos - amount;
-            Ok(res.to_string())
-        // 5 (treated the same as +5)
-        } else {
-            let amount = amount.parse::<u32>()? * 1000;
-            let res = pos + amount;
-            Ok(res.to_string())
-        }
-    }
-}
-
 async fn add_file(path: impl ToString) -> Result<(), Box<dyn Error>> {
     let absolute_path = fs::canonicalize(path.to_string())?;
     let absolute = absolute_path.to_str().unwrap().trim_start_matches(r"\\?\");
     let encoded = urlencoding::encode(absolute);
 
+    log::info(format!(
+        "Adding {:?}",
+        Path::file_name(Path::new(&path.to_string())).unwrap()
+    ));
     // returns an error when it shouldnt so just ignore error lole, https://github.com/hyperium/hyper/issues/2136
     _ = Client::new()
-        .get(format_url_path("ADDITEM", &encoded))
+        .get(format::url_path("ADDITEM", &encoded))
         .send()
         .await;
 

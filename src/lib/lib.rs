@@ -1,9 +1,10 @@
-use helper::*;
 use reqwest::Client;
 use serde::Deserialize;
 use std::error::Error;
 
+pub(crate) mod format;
 mod helper;
+pub(crate) mod log;
 
 pub mod command;
 pub mod queue;
@@ -34,7 +35,7 @@ struct NowPlaying {
 impl NowPlaying {
     async fn new() -> Result<NowPlaying, Box<dyn Error>> {
         let body = Client::new()
-            .get(format_url("NP"))
+            .get(format::url("NP"))
             .send()
             .await?
             .text()
