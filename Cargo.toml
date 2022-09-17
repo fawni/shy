@@ -1,13 +1,13 @@
 [package]
 name = "shy"
-version = "0.3.1"
+version = "0.3.2"
 description = "A command line remote controller for MusicBee"
 authors = ["obscurity <z@x4.pm>"]
 license = "OSL-3.0"
 edition = "2021"
 
 [dependencies]
-tokio = { version = "1.21", features = ["full"] }
+tokio = { version = "1.21", features = ["macros", "rt-multi-thread"] }
 clap = "3.2"
 owo-colors = "3.5"
 reqwest = "0.11"
