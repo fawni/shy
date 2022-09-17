@@ -1,14 +1,10 @@
 use crate::{format, helper::*, log, NowPlaying};
 use reqwest::Client;
-use std::{error::Error, fs, path::Path};
+use std::{error::Error, fs, path::Path, vec};
 
 pub async fn add(path: impl ToString) -> Result<(), Box<dyn Error>> {
     if fs::metadata(path.to_string())?.is_dir() {
-        let files = fs::read_dir(path.to_string())?;
-        for file in files {
-            let path = file?.path();
-            add_file(path.display()).await?;
-        }
+        add_directory(path).await?;
     } else {
         add_file(path).await?;
     }
@@ -103,6 +99,23 @@ async fn add_file(path: impl ToString) -> Result<(), Box<dyn Error>> {
         .get(format::url_path("ADDITEM", &encoded))
         .send()
         .await;
+
+    Ok(())
+}
+
+async fn add_directory(path: impl ToString) -> Result<(), Box<dyn Error>> {
+    let valid = vec![
+        "mp3", "m4a", "mp4", "3gp", "m4b", "m4p", "m4r", "m4v", "aac", "mpc", "mp+", "mpp", "ogg",
+        "ogv", "oga", "ogx", "ogm", "spx", "opus", "flac", "caf", "ape", "wv", "wma", "wav",
+        "wave", "mid", "mod", "xm",
+    ];
+
+    for file in fs::read_dir(path.to_string())? {
+        let path = file?.path();
+        if valid.contains(&path.extension().unwrap().to_str().unwrap()) {
+            add_file(path.display()).await?;
+        }
+    }
 
     Ok(())
 }

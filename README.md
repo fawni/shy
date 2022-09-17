@@ -43,7 +43,7 @@ Most subcommands have aliases which are the recommended way of usage.
 shy np # print now playing
 shy v +10 | 80 | -40 # increase volume by 10 points | set volume to 80 | decrease volume by 40
 shy seek 5 | 70% | -20% # seek 5 seconds | set position to 70% | go back 20%
-shy a track.mp3 track.flac path/to/album # adds track.mp3, track.flac and every file in directory "album" to queue
+shy add track.mp3 track.flac path/to/album # adds track.mp3, track.flac and every valid audio file in "album" to queue
 ```
 
 ## Implemented
