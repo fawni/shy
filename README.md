@@ -14,7 +14,7 @@ cargo install --git https://github.com/x6r/shy
 
 ```
 $ shy --help
-shy 0.3.0
+shy 0.3.1
 
 USAGE:
     shy.exe [SUBCOMMAND]
@@ -49,7 +49,7 @@ shy a track.mp3 track.flac path/to/album # adds track.mp3, track.flac and every 
 ## Implemented
 
 - [ ] Player commands
-  - [x] PlayPause
+  - [x] Play/pause
   - [x] Next
   - [x] Previous
   - [x] Stop
