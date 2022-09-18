@@ -1,4 +1,5 @@
 use crate::{format, helper::*, log, NowPlaying};
+use owo_colors::OwoColorize;
 use reqwest::Client;
 use std::{error::Error, fs, path::Path, vec};
 
@@ -15,12 +16,11 @@ pub async fn add(path: impl ToString) -> Result<(), Box<dyn Error>> {
 pub async fn play() -> Result<String, Box<dyn Error>> {
     Client::new().get(format::url("C_PP")).send().await?;
     let np = NowPlaying::new().await?;
-    let res = format!(
-        "{} | {} by {}",
-        np.playing.to_uppercase(),
-        np.title,
-        np.artist,
-    );
+    let res = if np.playing == "playing" {
+        format!("{} {} by {}", "▶️".green(), np.title.bold(), np.artist)
+    } else {
+        format!("{} {} by {}", "⏸️".red(), np.title.bold(), np.artist)
+    };
 
     Ok(res)
 }
@@ -28,7 +28,7 @@ pub async fn play() -> Result<String, Box<dyn Error>> {
 pub async fn stop() -> Result<String, Box<dyn Error>> {
     Client::new().get(format::url("C_STOP")).send().await?;
     let np = NowPlaying::new().await?;
-    let res = format!("STOPPED | {} by {}", np.title, np.artist,);
+    let res = format!("{} {} by {}", "⏹️".red(), np.title.bold(), np.artist,);
 
     Ok(res)
 }
@@ -38,8 +38,13 @@ pub async fn next() -> Result<String, Box<dyn Error>> {
     Client::new().get(format::url("C_NEXT")).send().await?;
     let np = NowPlaying::new().await?;
     let res = format!(
-        "SKIPPED | {} by {}\nPLAYING | {} by {}",
-        old.title, old.artist, np.title, np.artist
+        "{} {} by {}\n{} {} by {}",
+        ">>".red(),
+        old.title.bold(),
+        old.artist,
+        "▶️".green(),
+        np.title.bold(),
+        np.artist
     );
 
     Ok(res)
@@ -50,8 +55,13 @@ pub async fn previous() -> Result<String, Box<dyn Error>> {
     Client::new().get(format::url("C_PREV")).send().await?;
     let np = NowPlaying::new().await?;
     let res = format!(
-        "SKIPPED | {} by {}\nPLAYING | {} by {}",
-        old.title, old.artist, np.title, np.artist
+        "{} {} by {}\n{} {} by {}",
+        "<<".red(),
+        old.title.bold(),
+        old.artist,
+        "▶️".green(),
+        np.title.bold(),
+        np.artist
     );
 
     Ok(res)
@@ -66,8 +76,8 @@ pub async fn volume(amount: impl ToString) -> Result<String, Box<dyn Error>> {
         .send()
         .await?;
     let res = format!(
-        "Changed volume to {}%",
-        NowPlaying::new().await?.volume * 100.0
+        "Volume set to {}%",
+        (NowPlaying::new().await?.volume * 100.0).bold()
     );
 
     Ok(res)
@@ -81,8 +91,13 @@ pub async fn seek(amount: impl ToString) -> Result<String, Box<dyn Error>> {
         ))
         .send()
         .await?;
+    let res = if amount.to_string().ends_with('%') {
+        format!("Set position to {}", amount.to_string().bold())
+    } else {
+        format!("Seeked {} seconds", amount.to_string().bold())
+    };
 
-    Ok("Seeked!".to_string())
+    Ok(res)
 }
 
 async fn add_file(path: impl ToString) -> Result<(), Box<dyn Error>> {

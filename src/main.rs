@@ -1,5 +1,5 @@
 use clap::ArgMatches;
-use shy::{command, queue};
+use shy::{command, log, queue};
 use std::error::Error;
 
 mod args;
@@ -44,7 +44,8 @@ async fn play() -> Result<(), Box<dyn Error>> {
 }
 
 async fn stop() -> Result<(), Box<dyn Error>> {
-    command::stop().await?;
+    let res = command::stop().await?;
+    println!("{res}");
     Ok(())
 }
 
@@ -64,18 +65,18 @@ async fn volume(matches: &ArgMatches) -> Result<(), Box<dyn Error>> {
     let amount = match matches.get_one::<String>("amount") {
         Some(amount) => amount,
         None => {
-            println!("Current volume: {}%", queue::volume().await?);
+            log::info(format!("Volume is at {}%", queue::volume().await?));
             return Ok(());
         }
     };
     let res = command::volume(amount).await?;
-    println!("{res}");
+    log::info(res);
     Ok(())
 }
 
 async fn seek(matches: &ArgMatches) -> Result<(), Box<dyn Error>> {
     let amount = matches.get_one::<String>("amount").unwrap();
     let res = command::seek(amount).await?;
-    println!("{res}");
+    log::info(res);
     Ok(())
 }

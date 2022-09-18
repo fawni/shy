@@ -4,7 +4,7 @@ use std::error::Error;
 
 pub(crate) mod format;
 mod helper;
-pub(crate) mod log;
+pub mod log;
 
 pub mod command;
 pub mod queue;
