@@ -1,4 +1,4 @@
-use crate::{format, helper::*, log, NowPlaying};
+use crate::{format, glyphs::*, helper::*, log, NowPlaying};
 use owo_colors::OwoColorize;
 use reqwest::Client;
 use std::{error::Error, fs, path::Path, vec};
@@ -17,9 +17,9 @@ pub async fn play() -> Result<String, Box<dyn Error>> {
     Client::new().get(format::url("C_PP")).send().await?;
     let np = NowPlaying::new().await?;
     let res = if np.playing == "playing" {
-        format!("{} {} by {}", "▶️".green(), np.title.bold(), np.artist)
+        format!("{} {} by {}", PLAY.green(), np.title.bold(), np.artist)
     } else {
-        format!("{} {} by {}", "⏸️".red(), np.title.bold(), np.artist)
+        format!("{} {} by {}", PAUSE.red(), np.title.bold(), np.artist)
     };
 
     Ok(res)
@@ -28,7 +28,7 @@ pub async fn play() -> Result<String, Box<dyn Error>> {
 pub async fn stop() -> Result<String, Box<dyn Error>> {
     Client::new().get(format::url("C_STOP")).send().await?;
     let np = NowPlaying::new().await?;
-    let res = format!("{} {} by {}", "⏹️".red(), np.title.bold(), np.artist,);
+    let res = format!("{} {} by {}", STOP.red(), np.title.bold(), np.artist,);
 
     Ok(res)
 }
@@ -39,10 +39,10 @@ pub async fn next() -> Result<String, Box<dyn Error>> {
     let np = NowPlaying::new().await?;
     let res = format!(
         "{} {} by {}\n{} {} by {}",
-        ">>".red(),
+        NEXT.red(),
         old.title.bold(),
         old.artist,
-        "▶️".green(),
+        PLAY.green(),
         np.title.bold(),
         np.artist
     );
@@ -56,10 +56,10 @@ pub async fn previous() -> Result<String, Box<dyn Error>> {
     let np = NowPlaying::new().await?;
     let res = format!(
         "{} {} by {}\n{} {} by {}",
-        "<<".red(),
+        PREV.red(),
         old.title.bold(),
         old.artist,
-        "▶️".green(),
+        PLAY.green(),
         np.title.bold(),
         np.artist
     );

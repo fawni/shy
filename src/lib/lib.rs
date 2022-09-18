@@ -7,6 +7,7 @@ mod helper;
 pub mod log;
 
 pub mod command;
+pub mod glyphs;
 pub mod queue;
 
 // todo: autodetect the port (%appdata%/MusicBee/WWWServerconfig.xml)
