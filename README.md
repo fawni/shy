@@ -14,7 +14,7 @@ cargo install --git https://github.com/x6r/shy
 
 ```
 $ shy --help
-shy 0.3.1
+shy 0.3.6
 
 USAGE:
     shy.exe [SUBCOMMAND]

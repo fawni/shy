@@ -2,12 +2,11 @@ use reqwest::Client;
 use serde::Deserialize;
 use std::error::Error;
 
-pub(crate) mod format;
+pub mod command;
+mod format;
+mod glyphs;
 mod helper;
 pub mod log;
-
-pub mod command;
-pub mod glyphs;
 pub mod queue;
 
 // todo: autodetect the port (%appdata%/MusicBee/WWWServerconfig.xml)

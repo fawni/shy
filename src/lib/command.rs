@@ -101,9 +101,10 @@ pub async fn seek(amount: impl ToString) -> Result<String, Box<dyn Error>> {
 }
 
 async fn add_file(path: impl ToString) -> Result<(), Box<dyn Error>> {
-    let absolute_path = fs::canonicalize(path.to_string())?;
-    let absolute = absolute_path.to_str().unwrap().trim_start_matches(r"\\?\");
-    let encoded = urlencoding::encode(absolute);
+    let absolute_path = fs::canonicalize(path.to_string())?
+        .to_string_lossy()
+        .to_string();
+    let encoded = urlencoding::encode(absolute_path.trim_end_matches(r"\\?\"));
 
     log::info(format!(
         "Adding {:?}",
@@ -127,7 +128,11 @@ async fn add_directory(path: impl ToString) -> Result<(), Box<dyn Error>> {
 
     for file in fs::read_dir(path.to_string())? {
         let path = file?.path();
-        if valid.contains(&path.extension().unwrap().to_str().unwrap()) {
+        let ext = match &path.extension() {
+            Some(ext) => ext.to_str().unwrap(),
+            None => continue,
+        };
+        if valid.contains(&ext) {
             add_file(path.display()).await?;
         }
     }
