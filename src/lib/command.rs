@@ -1,4 +1,4 @@
-use crate::{format, glyphs::*, helper::*, log, NowPlaying};
+use crate::{format, glyphs::*, helper::*, log, NowPlaying, ShuffleStatus};
 use owo_colors::OwoColorize;
 use reqwest::Client;
 use std::{error::Error, fs, path::Path, vec};
@@ -67,18 +67,28 @@ pub async fn previous() -> Result<String, Box<dyn Error>> {
     Ok(res)
 }
 
-pub async fn volume(amount: impl ToString) -> Result<String, Box<dyn Error>> {
-    Client::new()
-        .get(format::url_path(
-            "C_VOL",
-            parse_volume(amount.to_string()).await?,
-        ))
-        .send()
-        .await?;
-    let res = format!(
-        "Volume set to {}%",
-        (NowPlaying::new().await?.volume * 100.0).bold()
-    );
+pub async fn volume(amount: Option<impl ToString>) -> Result<String, Box<dyn Error>> {
+    let res = match amount {
+        Some(amount) => {
+            Client::new()
+                .get(format::url_path(
+                    "C_VOL",
+                    parse_volume(amount.to_string()).await?,
+                ))
+                .send()
+                .await?;
+            format!(
+                "Volume set to {}%",
+                (NowPlaying::new().await?.volume * 100.0).bold()
+            )
+        }
+        None => {
+            let np = NowPlaying::new().await?;
+            let volume = ((np.volume * 100.0) as u8).to_string();
+
+            return Ok(volume);
+        }
+    };
 
     Ok(res)
 }
@@ -95,6 +105,33 @@ pub async fn seek(amount: impl ToString) -> Result<String, Box<dyn Error>> {
         format!("Set position to {}", amount.to_string().bold())
     } else {
         format!("Seeked {} seconds", amount.to_string().bold())
+    };
+
+    Ok(res)
+}
+
+pub async fn shuffle(mut status: Option<ShuffleStatus>) -> Result<String, Box<dyn Error>> {
+    if let None | Some(ShuffleStatus::Toggle) = status {
+        let current_status = NowPlaying::new().await?.shuffle;
+        status = Some(ShuffleStatus::from(!current_status));
+    };
+
+    let res = match status {
+        Some(ShuffleStatus::On) => {
+            Client::new()
+                .get(format::url_path("C_SHUF", 1))
+                .send()
+                .await?;
+            "Turned shuffle ON".to_string()
+        }
+        Some(ShuffleStatus::Off) => {
+            Client::new()
+                .get(format::url_path("C_SHUF", 0))
+                .send()
+                .await?;
+            "Turned shuffle OFF".to_string()
+        }
+        _ => String::from("???"),
     };
 
     Ok(res)

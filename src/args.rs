@@ -1,4 +1,4 @@
-use clap::{Arg, Command};
+use clap::{builder::PossibleValuesParser, Arg, Command};
 
 pub fn get_app() -> Command<'static> {
     Command::new("shy")
@@ -29,6 +29,7 @@ pub fn get_app() -> Command<'static> {
         .subcommand(
             Command::new("previous")
                 .about("Play the previous track in the queue")
+                .visible_alias("prev")
                 .visible_alias("b"),
         )
         .subcommand(
@@ -53,6 +54,13 @@ pub fn get_app() -> Command<'static> {
                     .required(true)
                     .takes_value(true)
                     .allow_hyphen_values(true),
+            ),
+        )
+        .subcommand(
+            Command::new("shuffle").about("Change shuffle status").arg(
+                Arg::new("status")
+                    .takes_value(true)
+                    .value_parser(PossibleValuesParser::new(["on", "off"])),
             ),
         )
 }

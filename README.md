@@ -55,7 +55,7 @@ shy add track.mp3 track.flac path/to/album # adds track.mp3, track.flac and ever
   - [x] Stop
   - [x] Seek
   - [x] Volume
-  - [ ] Shuffle
+  - [x] Shuffle
   - [ ] Repeat
   - [ ] Scrobble
 - [x] Now playing

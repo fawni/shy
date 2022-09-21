@@ -16,13 +16,6 @@ pub async fn nowplaying() -> Result<String, Box<dyn Error>> {
     Ok(res)
 }
 
-pub async fn volume() -> Result<String, Box<dyn Error>> {
-    let np = NowPlaying::new().await?;
-    let volume = ((np.volume * 100.0) as u32).to_string();
-
-    Ok(volume)
-}
-
 fn pb(pos: u32, total: u32) -> String {
     const BAR_LENGTH: usize = 25;
     let (c, t) = (pos as usize, total as usize);

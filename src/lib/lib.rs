@@ -13,7 +13,7 @@ pub mod queue;
 static MUSICBEE_REST_URL: &str = "http://localhost:8080";
 
 #[allow(dead_code)]
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct NowPlaying {
     #[serde(rename = "Album")]
     album: String,
@@ -30,6 +30,32 @@ struct NowPlaying {
     scrobbling: bool,
     shuffle: bool,
     volume: f32,
+}
+
+#[derive(Debug)]
+pub enum ShuffleStatus {
+    On,
+    Off,
+    Toggle,
+}
+
+impl From<bool> for ShuffleStatus {
+    fn from(b: bool) -> Self {
+        match b {
+            true => ShuffleStatus::On,
+            false => ShuffleStatus::Off,
+        }
+    }
+}
+
+impl From<&String> for ShuffleStatus {
+    fn from(s: &String) -> Self {
+        match s.as_str() {
+            "on" => ShuffleStatus::On,
+            "off" => ShuffleStatus::Off,
+            _ => ShuffleStatus::Toggle,
+        }
+    }
 }
 
 impl NowPlaying {

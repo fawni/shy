@@ -1,5 +1,5 @@
 use clap::ArgMatches;
-use shy::{command, log, queue};
+use shy::{command, log, queue, ShuffleStatus};
 use std::error::Error;
 
 mod args;
@@ -15,6 +15,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         Some(("previous", _)) => previous().await,
         Some(("volume", cmd)) => volume(cmd).await,
         Some(("seek", cmd)) => seek(cmd).await,
+        Some(("shuffle", cmd)) => shuffle(cmd).await,
         None => {
             args::get_app().print_help()?;
             Ok(())
@@ -62,13 +63,7 @@ async fn previous() -> Result<(), Box<dyn Error>> {
 }
 
 async fn volume(matches: &ArgMatches) -> Result<(), Box<dyn Error>> {
-    let amount = match matches.get_one::<String>("amount") {
-        Some(amount) => amount,
-        None => {
-            log::info(format!("Volume is at {}%", queue::volume().await?));
-            return Ok(());
-        }
-    };
+    let amount = matches.get_one::<String>("amount");
     let res = command::volume(amount).await?;
     log::info(res);
     Ok(())
@@ -77,6 +72,13 @@ async fn volume(matches: &ArgMatches) -> Result<(), Box<dyn Error>> {
 async fn seek(matches: &ArgMatches) -> Result<(), Box<dyn Error>> {
     let amount = matches.get_one::<String>("amount").unwrap();
     let res = command::seek(amount).await?;
+    log::info(res);
+    Ok(())
+}
+
+async fn shuffle(matches: &ArgMatches) -> Result<(), Box<dyn Error>> {
+    let status = matches.get_one::<String>("status").map(ShuffleStatus::from);
+    let res = command::shuffle(status).await?;
     log::info(res);
     Ok(())
 }
