@@ -29,15 +29,16 @@ SUBCOMMANDS:
     next          Play the next track in the queue [aliases: n]
     nowplaying    Print information about the current track [aliases: np]
     play          Play/pause the current track [aliases: pause, p]
-    previous      Play the previous track in the queue [aliases: b]
+    previous      Play the previous track in the queue [aliases: prev, b]
     seek          Seek playback
+    shuffle       Change shuffle status
     stop          Stop playback [aliases: s]
     volume        Modify player volume [aliases: vol, v]
 ```
 
 Most subcommands have aliases which are the recommended way of usage.
 
-> _`|` in the following examples represents or_
+> ###### In the following examples, | represents or.
 
 ```sh
 shy np # print now playing
