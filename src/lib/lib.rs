@@ -60,12 +60,14 @@ impl From<&String> for ShuffleStatus {
 
 impl NowPlaying {
     async fn new() -> Result<NowPlaying, Box<dyn Error>> {
-        let body = Client::new()
-            .get(format::url("NP"))
-            .send()
-            .await?
-            .text()
-            .await?;
+        let body = reqwest::get(format::url("NP")).await?.text().await?;
+        let np: NowPlaying = serde_json::from_str(&body)?;
+
+        Ok(np)
+    }
+
+    async fn with(c: &Client) -> Result<NowPlaying, Box<dyn Error>> {
+        let body = c.get(format::url("NP")).send().await?.text().await?;
         let np: NowPlaying = serde_json::from_str(&body)?;
 
         Ok(np)
