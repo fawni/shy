@@ -6,9 +6,13 @@ pub fn get_app() -> Command<'static> {
         .subcommand(
             Command::new("add")
                 .about("Add a track to queue")
-                .visible_alias("queue")
                 .visible_alias("a")
                 .arg(Arg::new("track").takes_value(true).multiple_values(true)),
+        )
+        .subcommand(
+            Command::new("clear")
+                .about("Clear current queue")
+                .visible_alias("c"),
         )
         .subcommand(
             Command::new("play")

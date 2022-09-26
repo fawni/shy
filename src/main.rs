@@ -8,6 +8,7 @@ mod args;
 async fn main() -> Result<(), Box<dyn Error>> {
     match args::get_app().get_matches().subcommand() {
         Some(("add", cmd)) => add(cmd).await,
+        Some(("clear", _)) => clear().await,
         Some(("nowplaying", _)) => now_playing().await,
         Some(("play", _)) => play().await,
         Some(("stop", _)) => stop().await,
@@ -29,6 +30,12 @@ async fn add(matches: &ArgMatches) -> Result<(), Box<dyn Error>> {
     for path in paths {
         command::add(path).await?;
     }
+    Ok(())
+}
+
+async fn clear() -> Result<(), Box<dyn Error>> {
+    let res = command::clear().await?;
+    println!("{res}");
     Ok(())
 }
 

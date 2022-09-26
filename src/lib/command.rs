@@ -14,6 +14,12 @@ pub async fn add(path: impl ToString) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+pub async fn clear() -> Result<String, Box<dyn Error>> {
+    reqwest::get(format::url("CLEAR")).await?;
+    let res = format!("{} Cleared queue", CLEAR.red());
+    Ok(res)
+}
+
 pub async fn play() -> Result<String, Box<dyn Error>> {
     reqwest::get(format::url("C_PP")).await?;
     let np = NowPlaying::new().await?;

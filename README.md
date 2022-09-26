@@ -2,7 +2,9 @@
 
 > A command line remote controller for MusicBee!
 
-requires the MusicBee web server plugin [mb_WWWserver](https://github.com/Cynosphere/mb_WWWserver) to be installed.
+<!-- temporairly linked to my fork of a fork until Cynosphere/mb_WWWserver#1 gets merged (if ever) -->
+
+requires the MusicBee web server plugin [mb_WWWserver](https://github.com/x6r/mb_WWWserver) to be installed.
 
 ## Installation
 
@@ -14,7 +16,7 @@ cargo install --git https://github.com/x6r/shy
 
 ```
 $ shy --help
-shy 0.3.6
+shy 0.5.0
 
 USAGE:
     shy.exe [SUBCOMMAND]
@@ -60,8 +62,9 @@ shy add track.mp3 track.flac path/to/album # adds track.mp3, track.flac and ever
   - [ ] Repeat
   - [ ] Scrobble
 - [x] Now playing
-- [ ] List playlist
+- [ ] List queue
 - [x] Add to queue
+- [x] Clear queue
 - [ ] Album art to file
 
 ## License
