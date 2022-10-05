@@ -6,6 +6,26 @@ mod args;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    if cfg!(windows) {
+        use winapi::{
+            shared::minwindef::DWORD,
+            um::{
+                consoleapi::{GetConsoleMode, SetConsoleMode},
+                processenv::GetStdHandle,
+                winbase::STD_OUTPUT_HANDLE,
+                wincon::ENABLE_VIRTUAL_TERMINAL_PROCESSING,
+            },
+        };
+
+        unsafe {
+            let handle = GetStdHandle(STD_OUTPUT_HANDLE);
+            let mut original_mode: DWORD = 0;
+
+            GetConsoleMode(handle, &mut original_mode);
+            SetConsoleMode(handle, ENABLE_VIRTUAL_TERMINAL_PROCESSING | original_mode)
+        };
+    }
+
     match args::get_app().get_matches().subcommand() {
         Some(("add", cmd)) => add(cmd).await,
         Some(("clear", _)) => clear().await,
