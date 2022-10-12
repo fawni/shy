@@ -1,5 +1,5 @@
 use clap::ArgMatches;
-use shy::{command, log, queue, ShuffleStatus};
+use shy::{command, log, playback, ShuffleStatus};
 use std::error::Error;
 
 mod args;
@@ -30,6 +30,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         Some(("add", cmd)) => add(cmd).await,
         Some(("clear", _)) => clear().await,
         Some(("nowplaying", _)) => now_playing().await,
+        Some(("queue", _)) => queue().await,
         Some(("play", _)) => play().await,
         Some(("stop", _)) => stop().await,
         Some(("next", _)) => next().await,
@@ -60,7 +61,13 @@ async fn clear() -> Result<(), Box<dyn Error>> {
 }
 
 async fn now_playing() -> Result<(), Box<dyn Error>> {
-    let res = queue::nowplaying().await?;
+    let res = playback::nowplaying().await?;
+    println!("{res}");
+    Ok(())
+}
+
+async fn queue() -> Result<(), Box<dyn Error>> {
+    let res = playback::queue().await?;
     println!("{res}");
     Ok(())
 }

@@ -7,7 +7,7 @@ mod format;
 mod glyphs;
 mod helper;
 pub mod log;
-pub mod queue;
+pub mod playback;
 
 // todo: autodetect the port (%appdata%/MusicBee/WWWServerconfig.xml)
 static MUSICBEE_REST_URL: &str = "http://localhost:8080";
@@ -24,38 +24,12 @@ struct NowPlaying {
     position: u32,
     duration: u32,
     file: String,
-    playing: String,
+    playing: Option<PlayingStatus>,
     queued: bool,
-    repeat: String,
+    repeat: Option<String>,
     scrobbling: bool,
     shuffle: bool,
     volume: f32,
-}
-
-#[derive(Debug)]
-pub enum ShuffleStatus {
-    On,
-    Off,
-    Toggle,
-}
-
-impl From<bool> for ShuffleStatus {
-    fn from(b: bool) -> Self {
-        match b {
-            true => ShuffleStatus::On,
-            false => ShuffleStatus::Off,
-        }
-    }
-}
-
-impl From<&String> for ShuffleStatus {
-    fn from(s: &String) -> Self {
-        match s.as_str() {
-            "on" => ShuffleStatus::On,
-            "off" => ShuffleStatus::Off,
-            _ => ShuffleStatus::Toggle,
-        }
-    }
 }
 
 impl NowPlaying {
@@ -71,5 +45,45 @@ impl NowPlaying {
         let np: NowPlaying = serde_json::from_str(&body)?;
 
         Ok(np)
+    }
+}
+
+#[derive(Debug, Deserialize, PartialEq, Eq)]
+pub enum PlayingStatus {
+    #[serde(rename = "loading")]
+    Loading,
+    #[serde(rename = "playing")]
+    Playing,
+    #[serde(rename = "paused")]
+    Paused,
+    #[serde(rename = "stopped")]
+    Stopped,
+    #[serde(other)]
+    Unkown,
+}
+
+#[derive(Debug)]
+pub enum ShuffleStatus {
+    On,
+    Off,
+    Toggle,
+}
+
+impl From<bool> for ShuffleStatus {
+    fn from(b: bool) -> Self {
+        match b {
+            true => Self::On,
+            false => Self::Off,
+        }
+    }
+}
+
+impl From<&String> for ShuffleStatus {
+    fn from(s: &String) -> Self {
+        match s.as_str() {
+            "on" => Self::On,
+            "off" => Self::Off,
+            _ => Self::Toggle,
+        }
     }
 }

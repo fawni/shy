@@ -1,4 +1,4 @@
-use crate::{format, helper::*, NowPlaying};
+use crate::{format, glyphs, helper::*, NowPlaying};
 use owo_colors::OwoColorize;
 use std::{cmp::max, error::Error};
 
@@ -14,6 +14,25 @@ pub async fn nowplaying() -> Result<String, Box<dyn Error>> {
     );
 
     Ok(res)
+}
+
+pub async fn queue() -> Result<String, Box<dyn Error>> {
+    let client = reqwest::Client::new();
+    let body = client.get(format::url("PL")).send().await?.text().await?;
+    let queue: Vec<NowPlaying> = serde_json::from_str(&body)?;
+    let np = NowPlaying::with(&client).await?;
+    let mut res = String::new();
+    for (i, track) in queue.iter().enumerate() {
+        let prefix = if np.file == track.file {
+            format!("{} ", glyphs::PLAY.green())
+        } else {
+            format!("{}.", i + 1)
+        };
+
+        res += &format!("{} {} by {}\n", prefix, track.title.bold(), track.artist);
+    }
+
+    Ok(res.trim_end().to_string())
 }
 
 fn pb(pos: u32, total: u32) -> String {

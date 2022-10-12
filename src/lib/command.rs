@@ -1,4 +1,4 @@
-use crate::{format, glyphs::*, helper::*, log, NowPlaying, ShuffleStatus};
+use crate::{format, glyphs::*, helper::*, log, NowPlaying, PlayingStatus, ShuffleStatus};
 use owo_colors::OwoColorize;
 use reqwest::Client;
 use std::{error::Error, fs, path::Path, vec};
@@ -23,7 +23,7 @@ pub async fn clear() -> Result<String, Box<dyn Error>> {
 pub async fn play() -> Result<String, Box<dyn Error>> {
     reqwest::get(format::url("C_PP")).await?;
     let np = NowPlaying::new().await?;
-    let res = if np.playing == "playing" {
+    let res = if np.playing == Some(PlayingStatus::Playing) {
         format!("{} {} by {}", PLAY.green(), np.title.bold(), np.artist)
     } else {
         format!("{} {} by {}", PAUSE.red(), np.title.bold(), np.artist)

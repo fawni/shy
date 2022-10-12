@@ -42,6 +42,11 @@ pub fn get_app() -> Command<'static> {
                 .visible_alias("np"),
         )
         .subcommand(
+            Command::new("queue")
+                .about("List queued tracks")
+                .visible_alias("q"),
+        )
+        .subcommand(
             Command::new("volume")
                 .about("Modify player volume")
                 .visible_alias("vol")
