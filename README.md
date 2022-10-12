@@ -63,7 +63,7 @@ shy seek 5 | 70% | -20% # seek 5 seconds | set position to 70% | go back 20%
   - [ ] Repeat
   - [ ] Scrobble
 - [x] Now playing
-- [ ] List queue
+- [x] List queue
 - [x] Add to queue
 - [x] Clear queue
 - [ ] Album art to file
