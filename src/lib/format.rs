@@ -1,4 +1,4 @@
-use crate::{NowPlaying, MUSICBEE_REST_URL};
+use crate::{NowPlaying, API_BASE};
 use owo_colors::OwoColorize;
 
 pub(crate) fn info(np: NowPlaying) -> String {
@@ -29,13 +29,13 @@ pub(crate) fn info(np: NowPlaying) -> String {
 }
 
 pub(crate) fn url(endpoint: impl ToString) -> String {
-    format!("{}/{}", MUSICBEE_REST_URL, endpoint.to_string())
+    format!("{}/{}", *API_BASE, endpoint.to_string())
 }
 
 pub(crate) fn url_path(endpoint: impl ToString, path: impl ToString) -> String {
     format!(
         "{}/{}?{}",
-        MUSICBEE_REST_URL,
+        *API_BASE,
         endpoint.to_string(),
         path.to_string()
     )

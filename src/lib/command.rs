@@ -1,7 +1,9 @@
-use crate::{format, glyphs::*, helper::*, log, NowPlaying, PlayingStatus, ShuffleStatus};
+use crate::{
+    format, glyphs::*, helper::*, log, NowPlaying, PlayingStatus, ShuffleStatus, VALID_FORMATS,
+};
 use owo_colors::OwoColorize;
 use reqwest::Client;
-use std::{error::Error, fs, path::Path, vec};
+use std::{error::Error, fs, path::Path};
 
 pub async fn add(path: impl ToString) -> Result<(), Box<dyn Error>> {
     let client = Client::new();
@@ -158,19 +160,13 @@ async fn add_file(c: &Client, path: impl ToString) -> Result<(), Box<dyn Error>>
 }
 
 async fn add_directory(c: &Client, path: impl ToString) -> Result<(), Box<dyn Error>> {
-    let valid = vec![
-        "mp3", "m4a", "mp4", "3gp", "m4b", "m4p", "m4r", "m4v", "aac", "mpc", "mp+", "mpp", "ogg",
-        "ogv", "oga", "ogx", "ogm", "spx", "opus", "flac", "caf", "ape", "wv", "wma", "wav",
-        "wave", "mid", "mod", "xm",
-    ];
-
     for file in fs::read_dir(path.to_string())? {
         let path = file?.path();
         let ext = match &path.extension() {
             Some(ext) => ext.to_str().unwrap(),
             None => continue,
         };
-        if valid.contains(&ext) {
+        if VALID_FORMATS.contains(&ext) {
             add_file(c, path.display()).await?;
         }
     }

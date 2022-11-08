@@ -1,6 +1,8 @@
+use lazy_static::lazy_static;
 use reqwest::Client;
+use roxmltree::Document;
 use serde::Deserialize;
-use std::error::Error;
+use std::{error::Error, fs};
 
 pub mod command;
 mod format;
@@ -9,8 +11,15 @@ mod helper;
 pub mod log;
 pub mod playback;
 
-// todo: autodetect the port (%appdata%/MusicBee/WWWServerconfig.xml)
-static MUSICBEE_REST_URL: &str = "http://localhost:8080";
+lazy_static! {
+    static ref API_BASE: String = format!("http://localhost:{}", get_port().unwrap());
+}
+
+static VALID_FORMATS: [&str; 29] = [
+    "mp3", "m4a", "mp4", "3gp", "m4b", "m4p", "m4r", "m4v", "aac", "mpc", "mp+", "mpp", "ogg",
+    "ogv", "oga", "ogx", "ogm", "spx", "opus", "flac", "caf", "ape", "wv", "wma", "wav", "wave",
+    "mid", "mod", "xm",
+];
 
 #[allow(dead_code)]
 #[derive(Deserialize, Debug)]
@@ -86,4 +95,23 @@ impl From<&String> for ShuffleStatus {
             _ => Self::Toggle,
         }
     }
+}
+
+fn get_port() -> Result<String, Box<dyn Error>> {
+    let config_dir = dirs::config_dir()
+        .unwrap()
+        .into_os_string()
+        .into_string()
+        .unwrap();
+    let file = fs::read_to_string(format!("{config_dir}\\MusicBee\\WWWServerconfig.xml"))?;
+    let doc = Document::parse(&file)?;
+    let port = doc
+        .descendants()
+        .find(|n| n.has_tag_name("port"))
+        .unwrap()
+        .text()
+        .unwrap()
+        .to_string();
+
+    Ok(port)
 }
