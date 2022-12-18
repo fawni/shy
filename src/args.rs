@@ -1,13 +1,13 @@
 use clap::{builder::PossibleValuesParser, Arg, Command};
 
-pub fn get_app() -> Command<'static> {
+pub fn get_app() -> Command {
     Command::new("shy")
         .version(env!("CARGO_PKG_VERSION"))
         .subcommand(
             Command::new("add")
                 .about("Add a track to queue")
                 .visible_alias("a")
-                .arg(Arg::new("track").takes_value(true).multiple_values(true)),
+                .arg(Arg::new("track").value_delimiter(' ')),
         )
         .subcommand(
             Command::new("clear")
@@ -51,25 +51,16 @@ pub fn get_app() -> Command<'static> {
                 .about("Modify player volume")
                 .visible_alias("vol")
                 .visible_alias("v")
-                .arg(
-                    Arg::new("amount")
-                        .takes_value(true)
-                        .allow_hyphen_values(true),
-                ),
+                .arg(Arg::new("amount").allow_hyphen_values(true)),
         )
         .subcommand(
-            Command::new("seek").about("Seek playback").arg(
-                Arg::new("amount")
-                    .required(true)
-                    .takes_value(true)
-                    .allow_hyphen_values(true),
-            ),
+            Command::new("seek")
+                .about("Seek playback")
+                .arg(Arg::new("amount").required(true).allow_hyphen_values(true)),
         )
         .subcommand(
-            Command::new("shuffle").about("Change shuffle status").arg(
-                Arg::new("status")
-                    .takes_value(true)
-                    .value_parser(PossibleValuesParser::new(["on", "off"])),
-            ),
+            Command::new("shuffle")
+                .about("Change shuffle status")
+                .arg(Arg::new("status").value_parser(PossibleValuesParser::new(["on", "off"]))),
         )
 }

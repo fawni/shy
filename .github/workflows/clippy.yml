@@ -1,4 +1,4 @@
-name: lint
+name: clippy
 on: push
 
 jobs:

@@ -97,7 +97,7 @@ pub async fn volume(amount: Option<impl ToString>) -> Result<String, Box<dyn Err
         }
         None => {
             let np = NowPlaying::new().await?;
-            let volume = ((np.volume * 100.0) as u8).to_string();
+            let volume = format!("{}%", (np.volume * 100.0) as u8);
 
             return Ok(volume);
         }

@@ -15,28 +15,25 @@ cargo install --git https://github.com/x6r/shy
 ## Usage
 
 ```
-shy 0.6.1
+Usage: shy [COMMAND]
 
-USAGE:
-    shy.exe [SUBCOMMAND]
+Commands:
+  add         Add a track to queue [aliases: a]
+  clear       Clear current queue [aliases: c]
+  play        Play/pause the current track [aliases: pause, p]
+  stop        Stop playback [aliases: s]
+  next        Play the next track in the queue [aliases: n]
+  previous    Play the previous track in the queue [aliases: prev, b]
+  nowplaying  Print information about the current track [aliases: np]
+  queue       List queued tracks [aliases: q]
+  volume      Modify player volume [aliases: vol, v]
+  seek        Seek playback
+  shuffle     Change shuffle status
+  help        Print this message or the help of the given subcommand(s)
 
-OPTIONS:
-    -h, --help       Print help information
-    -V, --version    Print version information
-
-SUBCOMMANDS:
-    add           Add a track to queue [aliases: a]
-    clear         Clear current queue [aliases: c]
-    help          Print this message or the help of the given subcommand(s)
-    next          Play the next track in the queue [aliases: n]
-    nowplaying    Print information about the current track [aliases: np]
-    play          Play/pause the current track [aliases: pause, p]
-    previous      Play the previous track in the queue [aliases: prev, b]
-    queue         List queued tracks [aliases: q]
-    seek          Seek playback
-    shuffle       Change shuffle status
-    stop          Stop playback [aliases: s]
-    volume        Modify player volume [aliases: vol, v]
+Options:
+  -h, --help     Print help information
+  -V, --version  Print version information
 ```
 
 Most subcommands have aliases which are the recommended way of usage.
