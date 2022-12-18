@@ -7,7 +7,7 @@ pub fn get_app() -> Command {
             Command::new("add")
                 .about("Add a track to queue")
                 .visible_alias("a")
-                .arg(Arg::new("track").value_delimiter(' ')),
+                .arg(Arg::new("track").num_args(1..)),
         )
         .subcommand(
             Command::new("clear")
