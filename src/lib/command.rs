@@ -150,8 +150,10 @@ async fn add_file(c: &Client, path: impl ToString) -> Result<(), Box<dyn Error>>
     let encoded = urlencoding::encode(absolute_path.trim_end_matches(r"\\?\"));
 
     log::info(format!(
-        "Adding {:?}",
-        Path::file_name(Path::new(&path.to_string())).unwrap()
+        "Adding \"{}\"",
+        Path::file_name(Path::new(&path.to_string()))
+            .unwrap()
+            .to_string_lossy()
     ));
     // returns an error when it shouldnt so just ignore error lole, https://github.com/hyperium/hyper/issues/2136
     _ = c.get(format::url_path("ADDITEM", &encoded)).send().await;
