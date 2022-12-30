@@ -4,12 +4,12 @@
 
 <!-- temporairly linked to my fork of a fork until Cynosphere/mb_WWWserver#1 gets merged (if ever) -->
 
-requires the MusicBee web server plugin [mb_WWWserver](https://github.com/x6r/mb_WWWserver) to be installed.
+requires the MusicBee web server plugin [mb_WWWserver](https://github.com/fawni/mb_WWWserver) to be installed.
 
 ## Installation
 
 ```
-cargo install --git https://github.com/x6r/shy
+cargo install --git https://github.com/fawni/shy
 ```
 
 ## Usage
