@@ -1,8 +1,7 @@
-use clap::{builder::PossibleValuesParser, Arg, Command};
+use clap::{builder::PossibleValuesParser, command, Arg, Command};
 
 pub fn get_app() -> Command {
-    Command::new("shy")
-        .version(env!("CARGO_PKG_VERSION"))
+    command!()
         .subcommand(
             Command::new("add")
                 .about("Add a track to queue")
