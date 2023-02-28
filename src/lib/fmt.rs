@@ -1,5 +1,19 @@
-use crate::{NowPlaying, API_BASE};
 use owo_colors::OwoColorize;
+
+use crate::{NowPlaying, API_BASE};
+
+pub(crate) fn url(endpoint: impl ToString) -> String {
+    format!("{}/{}", *API_BASE, endpoint.to_string())
+}
+
+pub(crate) fn url_path(endpoint: impl ToString, path: impl ToString) -> String {
+    format!(
+        "{}/{}?{}",
+        *API_BASE,
+        endpoint.to_string(),
+        path.to_string()
+    )
+}
 
 pub(crate) fn info(np: NowPlaying) -> String {
     let total_hours = np.duration / 1000 / 60 / 60;
@@ -26,17 +40,4 @@ pub(crate) fn info(np: NowPlaying) -> String {
             np.artist.bright_black()
         )
     }
-}
-
-pub(crate) fn url(endpoint: impl ToString) -> String {
-    format!("{}/{}", *API_BASE, endpoint.to_string())
-}
-
-pub(crate) fn url_path(endpoint: impl ToString, path: impl ToString) -> String {
-    format!(
-        "{}/{}?{}",
-        *API_BASE,
-        endpoint.to_string(),
-        path.to_string()
-    )
 }

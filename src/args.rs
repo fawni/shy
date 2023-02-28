@@ -16,8 +16,7 @@ pub fn get_app() -> Command {
         .subcommand(
             Command::new("play")
                 .about("Play/pause the current track")
-                .visible_alias("pause")
-                .visible_alias("p"),
+                .visible_aliases(["pause", "p"]),
         )
         .subcommand(
             Command::new("stop")
@@ -32,8 +31,7 @@ pub fn get_app() -> Command {
         .subcommand(
             Command::new("previous")
                 .about("Play the previous track in the queue")
-                .visible_alias("prev")
-                .visible_alias("b"),
+                .visible_aliases(["prev", "b"]),
         )
         .subcommand(
             Command::new("nowplaying")
@@ -43,13 +41,12 @@ pub fn get_app() -> Command {
         .subcommand(
             Command::new("queue")
                 .about("List queued tracks")
-                .visible_alias("q"),
+                .visible_aliases(["q", "list", "ls", "l"]),
         )
         .subcommand(
             Command::new("volume")
                 .about("Modify player volume")
-                .visible_alias("vol")
-                .visible_alias("v")
+                .visible_aliases(["vol", "v"])
                 .arg(Arg::new("amount").allow_hyphen_values(true)),
         )
         .subcommand(
@@ -61,5 +58,13 @@ pub fn get_app() -> Command {
             Command::new("shuffle")
                 .about("Change shuffle status")
                 .arg(Arg::new("status").value_parser(PossibleValuesParser::new(["on", "off"]))),
+        )
+        .subcommand(
+            Command::new("repeat")
+                .about("Change repeat status")
+                .visible_aliases(["loop", "r"])
+                .arg(Arg::new("status").value_parser(PossibleValuesParser::new([
+                    "none", "off", "single", "track", "one", "all", "queue", "on",
+                ]))),
         )
 }

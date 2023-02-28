@@ -2,14 +2,14 @@ use lazy_static::lazy_static;
 use reqwest::Client;
 use roxmltree::Document;
 use serde::Deserialize;
-use std::{error::Error, fs};
 
 pub mod command;
-mod format;
-mod glyphs;
-mod helper;
 pub mod log;
 pub mod playback;
+
+mod fmt;
+mod glyphs;
+mod helper;
 
 lazy_static! {
     static ref API_BASE: String = format!("http://localhost:{}", get_port().unwrap());
@@ -42,22 +42,22 @@ struct NowPlaying {
 }
 
 impl NowPlaying {
-    async fn new() -> Result<NowPlaying, Box<dyn Error>> {
-        let body = reqwest::get(format::url("NP")).await?.text().await?;
+    async fn new() -> Result<NowPlaying, Box<dyn std::error::Error>> {
+        let body = reqwest::get(fmt::url("NP")).await?.text().await?;
         let np: NowPlaying = serde_json::from_str(&body)?;
 
         Ok(np)
     }
 
-    async fn with(c: &Client) -> Result<NowPlaying, Box<dyn Error>> {
-        let body = c.get(format::url("NP")).send().await?.text().await?;
+    async fn with(c: &Client) -> Result<NowPlaying, Box<dyn std::error::Error>> {
+        let body = c.get(fmt::url("NP")).send().await?.text().await?;
         let np: NowPlaying = serde_json::from_str(&body)?;
 
         Ok(np)
     }
 }
 
-#[derive(Debug, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Deserialize)]
 pub enum PlayingStatus {
     #[serde(rename = "loading")]
     Loading,
@@ -76,6 +76,16 @@ pub enum ShuffleStatus {
     On,
     Off,
     Toggle,
+}
+
+impl ShuffleStatus {
+    fn toggle(&self) -> Self {
+        match self {
+            Self::On => Self::Off,
+            Self::Off => Self::On,
+            _ => unreachable!(),
+        }
+    }
 }
 
 impl From<bool> for ShuffleStatus {
@@ -97,13 +107,43 @@ impl From<&String> for ShuffleStatus {
     }
 }
 
-fn get_port() -> Result<String, Box<dyn Error>> {
+#[derive(Debug)]
+pub enum RepeatStatus {
+    None,
+    All,
+    Single,
+    Toggle,
+}
+
+impl RepeatStatus {
+    fn toggle(&self) -> Self {
+        match self {
+            Self::None => Self::All,
+            Self::All => Self::Single,
+            Self::Single => Self::None,
+            _ => unreachable!(),
+        }
+    }
+}
+
+impl From<&String> for RepeatStatus {
+    fn from(s: &String) -> Self {
+        match s.as_str() {
+            "none" | "off" => Self::None,
+            "all" | "queue" | "on" => Self::All,
+            "single" | "one" | "track" => Self::Single,
+            _ => Self::Toggle,
+        }
+    }
+}
+
+fn get_port() -> Result<String, Box<dyn std::error::Error>> {
     let config_dir = dirs::config_dir()
         .unwrap()
         .into_os_string()
         .into_string()
         .unwrap();
-    let file = fs::read_to_string(format!("{config_dir}\\MusicBee\\WWWServerconfig.xml"))?;
+    let file = std::fs::read_to_string(format!("{config_dir}\\MusicBee\\WWWServerconfig.xml"))?;
     let doc = Document::parse(&file)?;
     let port = doc
         .descendants()

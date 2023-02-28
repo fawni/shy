@@ -1,5 +1,4 @@
 use crate::NowPlaying;
-use std::error::Error;
 
 pub(crate) fn parse_duration(ms: u32) -> String {
     let d = ms / 1000;
@@ -10,7 +9,9 @@ pub(crate) fn parse_duration(ms: u32) -> String {
     }
 }
 
-pub(crate) async fn parse_volume(input: impl ToString) -> Result<impl ToString, Box<dyn Error>> {
+pub(crate) async fn parse_volume(
+    input: impl ToString,
+) -> Result<impl ToString, Box<dyn std::error::Error>> {
     let amount = input.to_string();
     let volume = NowPlaying::new().await?.volume;
     if amount.starts_with('+') {
@@ -26,7 +27,9 @@ pub(crate) async fn parse_volume(input: impl ToString) -> Result<impl ToString, 
     }
 }
 
-pub(crate) async fn parse_position(input: impl ToString) -> Result<impl ToString, Box<dyn Error>> {
+pub(crate) async fn parse_position(
+    input: impl ToString,
+) -> Result<impl ToString, Box<dyn std::error::Error>> {
     let amount = input.to_string();
     let np = NowPlaying::new().await?;
     let (pos, total) = (np.position, np.duration);

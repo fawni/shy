@@ -1,8 +1,8 @@
-use crate::{format, glyphs, helper::*, NowPlaying};
 use owo_colors::OwoColorize;
-use std::{cmp::max, error::Error};
 
-pub async fn nowplaying() -> Result<String, Box<dyn Error>> {
+use crate::{fmt, glyphs, helper::*, NowPlaying};
+
+pub async fn nowplaying() -> Result<String, Box<dyn std::error::Error>> {
     let np = NowPlaying::new().await?;
     let (pos, total) = (np.position, np.duration);
     let res = format!(
@@ -10,15 +10,15 @@ pub async fn nowplaying() -> Result<String, Box<dyn Error>> {
         parse_duration(pos),
         pb(pos, total),
         parse_duration(total),
-        format::info(np),
+        fmt::info(np),
     );
 
     Ok(res)
 }
 
-pub async fn queue() -> Result<String, Box<dyn Error>> {
+pub async fn queue() -> Result<String, Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
-    let body = client.get(format::url("PL")).send().await?.text().await?;
+    let body = client.get(fmt::url("PL")).send().await?.text().await?;
     let queue: Vec<NowPlaying> = serde_json::from_str(&body)?;
     let np = NowPlaying::with(&client).await?;
     let mut res = String::new();
@@ -41,7 +41,7 @@ fn pb(pos: u32, total: u32) -> String {
     let p = if c == 0 {
         c
     } else {
-        max((c * BAR_LENGTH) / t, 1)
+        std::cmp::max((c * BAR_LENGTH) / t, 1)
     };
     let l = BAR_LENGTH - p;
 
