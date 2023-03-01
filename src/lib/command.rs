@@ -1,4 +1,4 @@
-use std::{path::Path, time::Duration};
+use std::path::Path;
 
 use owo_colors::OwoColorize;
 use reqwest::Client;
