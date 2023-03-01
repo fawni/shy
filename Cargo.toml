@@ -4,6 +4,9 @@ version = "0.6.4"
 description = "A command line remote controller for MusicBee"
 authors = ["fawn <fawn@envs.net>"]
 license = "OSL-3.0"
+repository = "https://github.com/fawni/shy"
+keywords = ["musicbee"]
+categories = ["command-line-utilities"]
 edition = "2021"
 
 [dependencies]
