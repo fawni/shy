@@ -4,7 +4,7 @@ use roxmltree::Document;
 use serde::Deserialize;
 
 pub mod command;
-pub mod log;
+pub mod macros;
 pub mod playback;
 
 mod fmt;
@@ -42,16 +42,16 @@ struct NowPlaying {
 }
 
 impl NowPlaying {
-    async fn new() -> Result<NowPlaying, Box<dyn std::error::Error>> {
+    async fn new() -> Result<Self, Box<dyn std::error::Error>> {
         let body = reqwest::get(fmt::url("NP")).await?.text().await?;
-        let np: NowPlaying = serde_json::from_str(&body)?;
+        let np: Self = serde_json::from_str(&body)?;
 
         Ok(np)
     }
 
-    async fn with(c: &Client) -> Result<NowPlaying, Box<dyn std::error::Error>> {
+    async fn with(c: &Client) -> Result<Self, Box<dyn std::error::Error>> {
         let body = c.get(fmt::url("NP")).send().await?.text().await?;
-        let np: NowPlaying = serde_json::from_str(&body)?;
+        let np: Self = serde_json::from_str(&body)?;
 
         Ok(np)
     }
@@ -83,16 +83,17 @@ impl ShuffleStatus {
         match self {
             Self::On => Self::Off,
             Self::Off => Self::On,
-            _ => unreachable!(),
+            Self::Toggle => unreachable!(),
         }
     }
 }
 
 impl From<bool> for ShuffleStatus {
     fn from(b: bool) -> Self {
-        match b {
-            true => Self::On,
-            false => Self::Off,
+        if b {
+            Self::On
+        } else {
+            Self::Off
         }
     }
 }
@@ -121,7 +122,7 @@ impl RepeatStatus {
             Self::None => Self::All,
             Self::All => Self::Single,
             Self::Single => Self::None,
-            _ => unreachable!(),
+            Self::Toggle => unreachable!(),
         }
     }
 }

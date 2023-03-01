@@ -1,9 +1,12 @@
-use std::path::Path;
+use std::{path::Path, time::Duration};
 
 use owo_colors::OwoColorize;
 use reqwest::Client;
 
-use crate::*;
+use crate::{
+    fmt, glyphs, helper, info, NowPlaying, PlayingStatus, RepeatStatus, ShuffleStatus,
+    VALID_FORMATS,
+};
 
 pub async fn add(path: impl ToString) -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new();
@@ -99,27 +102,24 @@ pub async fn previous() -> Result<String, Box<dyn std::error::Error>> {
 }
 
 pub async fn volume(amount: Option<impl ToString>) -> Result<String, Box<dyn std::error::Error>> {
-    let res = match amount {
-        Some(amount) => {
-            let client = Client::new();
-            client
-                .get(fmt::url_path(
-                    "C_VOL",
-                    helper::parse_volume(amount.to_string()).await?,
-                ))
-                .send()
-                .await?;
-            format!(
-                "Volume set to {}%",
-                (NowPlaying::with(&client).await?.volume * 100.0).bold()
-            )
-        }
-        None => {
-            let np = NowPlaying::new().await?;
-            let volume = format!("{}%", (np.volume * 100.0) as u8);
+    let res = if let Some(amount) = amount {
+        let client = Client::new();
+        client
+            .get(fmt::url_path(
+                "C_VOL",
+                &helper::parse_volume(amount.to_string()).await?,
+            ))
+            .send()
+            .await?;
+        format!(
+            "Volume set to {}%",
+            (NowPlaying::with(&client).await?.volume * 100.0).bold()
+        )
+    } else {
+        let np = NowPlaying::new().await?;
+        let volume = format!("{}%", (np.volume * 100.0) as u8);
 
-            return Ok(volume);
-        }
+        return Ok(volume);
     };
 
     Ok(res)
@@ -128,7 +128,7 @@ pub async fn volume(amount: Option<impl ToString>) -> Result<String, Box<dyn std
 pub async fn seek(amount: impl ToString) -> Result<String, Box<dyn std::error::Error>> {
     reqwest::get(fmt::url_path(
         "C_SEEK",
-        helper::parse_position(amount.to_string()).await?,
+        &helper::parse_position(amount.to_string()).await?,
     ))
     .await?;
     let res = if amount.to_string().ends_with('%') {
@@ -151,11 +151,11 @@ pub async fn shuffle(
 
     let res = match status {
         Some(ShuffleStatus::Off) => {
-            client.get(fmt::url_path("C_SHUF", 0)).send().await?;
+            client.get(fmt::url_path("C_SHUF", &0)).send().await?;
             "Turned shuffle OFF".to_owned()
         }
         Some(ShuffleStatus::On) => {
-            client.get(fmt::url_path("C_SHUF", 1)).send().await?;
+            client.get(fmt::url_path("C_SHUF", &1)).send().await?;
             "Turned shuffle ON".to_owned()
         }
         _ => unreachable!(),
@@ -169,21 +169,22 @@ pub async fn repeat(
 ) -> Result<String, Box<dyn std::error::Error>> {
     let client = Client::new();
     if let None | Some(RepeatStatus::Toggle) = status {
-        let current_status = RepeatStatus::from(&NowPlaying::with(&client).await?.repeat.unwrap());
+        let current_status =
+            RepeatStatus::from(&NowPlaying::with(&client).await?.repeat.unwrap_or_default());
         status = Some(RepeatStatus::toggle(&current_status));
     };
 
     let res = match status {
         Some(RepeatStatus::None) => {
-            client.get(fmt::url_path("C_REP", 0)).send().await?;
+            client.get(fmt::url_path("C_REP", &0)).send().await?;
             "Changed loop to OFF".to_string()
         }
         Some(RepeatStatus::All) => {
-            client.get(fmt::url_path("C_REP", 1)).send().await?;
+            client.get(fmt::url_path("C_REP", &1)).send().await?;
             "Changed loop to ALL".to_string()
         }
         Some(RepeatStatus::Single) => {
-            client.get(fmt::url_path("C_REP", 2)).send().await?;
+            client.get(fmt::url_path("C_REP", &2)).send().await?;
             "Changed loop to TRACK".to_string()
         }
         _ => unreachable!(),
@@ -198,13 +199,12 @@ async fn add_file(c: &Client, path: impl ToString) -> Result<(), Box<dyn std::er
         .to_string();
     let encoded = urlencoding::encode(absolute_path.trim_end_matches(r"\\?\"));
 
-    log::info(format!(
+    info!(
         "Adding \"{}\"",
         Path::file_name(Path::new(&path.to_string()))
             .unwrap()
             .to_string_lossy()
-    ));
-    // returns an error when it shouldnt so just ignore error lole, https://github.com/hyperium/hyper/issues/2136
+    );
     _ = c.get(fmt::url_path("ADDITEM", &encoded)).send().await;
 
     Ok(())

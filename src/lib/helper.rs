@@ -1,15 +1,16 @@
 use crate::NowPlaying;
 
-pub(crate) fn parse_duration(ms: u32) -> String {
+pub fn parse_duration(ms: u32) -> String {
     let d = ms / 1000;
     let h = d / 60;
-    match (d / 60) / 60 {
-        0 => format!("{:02}:{:02}", (h % 60), (d % 60)),
-        _ => format!("{:02}:{:02}:{:02}", (h / 60), (h % 60), (d % 60)),
+    if (d / 60) / 60 == 0 {
+        format!("{:02}:{:02}", (h % 60), (d % 60))
+    } else {
+        format!("{:02}:{:02}:{:02}", (h / 60), (h % 60), (d % 60))
     }
 }
 
-pub(crate) async fn parse_volume(
+pub async fn parse_volume(
     input: impl ToString,
 ) -> Result<impl ToString, Box<dyn std::error::Error>> {
     let amount = input.to_string();
@@ -27,9 +28,9 @@ pub(crate) async fn parse_volume(
     }
 }
 
-pub(crate) async fn parse_position(
-    input: impl ToString,
-) -> Result<impl ToString, Box<dyn std::error::Error>> {
+pub async fn parse_position(
+    input: impl ToString + Send,
+) -> Result<impl ToString + Send, Box<dyn std::error::Error>> {
     let amount = input.to_string();
     let np = NowPlaying::new().await?;
     let (pos, total) = (np.position, np.duration);

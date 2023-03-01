@@ -2,11 +2,11 @@ use owo_colors::OwoColorize;
 
 use crate::{NowPlaying, API_BASE};
 
-pub(crate) fn url(endpoint: impl ToString) -> String {
+pub fn url(endpoint: impl ToString) -> String {
     format!("{}/{}", *API_BASE, endpoint.to_string())
 }
 
-pub(crate) fn url_path(endpoint: impl ToString, path: impl ToString) -> String {
+pub fn url_path(endpoint: impl ToString, path: &impl ToString) -> String {
     format!(
         "{}/{}?{}",
         *API_BASE,
@@ -15,7 +15,7 @@ pub(crate) fn url_path(endpoint: impl ToString, path: impl ToString) -> String {
     )
 }
 
-pub(crate) fn info(np: NowPlaying) -> String {
+pub(crate) fn info(np: &NowPlaying) -> String {
     let total_hours = np.duration / 1000 / 60 / 60;
     let played_hours = np.position / 1000 / 60 / 60;
 

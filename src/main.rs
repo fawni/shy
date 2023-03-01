@@ -1,5 +1,6 @@
 use clap::ArgMatches;
-use shy::{command, log, playback, RepeatStatus, ShuffleStatus};
+use owo_colors::OwoColorize;
+use shy::{command, info, playback, RepeatStatus, ShuffleStatus};
 
 mod args;
 
@@ -22,10 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Some(("volume", cmd)) => volume(cmd).await,
         Some(("shuffle", cmd)) => shuffle(cmd).await,
         Some(("repeat", cmd)) => repeat(cmd).await,
-        None => {
-            args::get_app().print_help()?;
-            Ok(())
-        }
+        None => Ok(args::get_app().print_help()?),
         _ => unreachable!(),
     }
 }
@@ -40,72 +38,61 @@ async fn add(matches: &ArgMatches) -> Result<(), Box<dyn std::error::Error>> {
 
 async fn clear() -> Result<(), Box<dyn std::error::Error>> {
     let res = command::clear().await?;
-    println!("{res}");
-    Ok(())
+    Ok(println!("{res}"))
 }
 
 async fn now_playing() -> Result<(), Box<dyn std::error::Error>> {
     let res = playback::nowplaying().await?;
-    println!("{res}");
-    Ok(())
+    Ok(println!("{res}"))
 }
 
 async fn queue() -> Result<(), Box<dyn std::error::Error>> {
     let res = playback::queue().await?;
-    println!("{res}");
-    Ok(())
+    Ok(println!("{res}"))
 }
 
 async fn play() -> Result<(), Box<dyn std::error::Error>> {
     let res = command::play().await?;
-    println!("{res}");
-    Ok(())
+    Ok(println!("{res}"))
 }
 
 async fn stop() -> Result<(), Box<dyn std::error::Error>> {
     let res = command::stop().await?;
-    println!("{res}");
-    Ok(())
+    Ok(println!("{res}"))
 }
 
 async fn next() -> Result<(), Box<dyn std::error::Error>> {
     let res = command::next().await?;
-    println!("{res}");
-    Ok(())
+    Ok(println!("{res}"))
 }
 
 async fn previous() -> Result<(), Box<dyn std::error::Error>> {
     let res = command::previous().await?;
-    println!("{res}");
-    Ok(())
+    Ok(println!("{res}"))
 }
 
 async fn volume(matches: &ArgMatches) -> Result<(), Box<dyn std::error::Error>> {
     let amount = matches.get_one::<String>("amount");
     let res = command::volume(amount).await?;
-    log::info(res);
-    Ok(())
+    Ok(info!("{res}"))
 }
 
 async fn seek(matches: &ArgMatches) -> Result<(), Box<dyn std::error::Error>> {
     let amount = matches.get_one::<String>("amount").unwrap();
     let res = command::seek(amount).await?;
-    log::info(res);
-    Ok(())
+    Ok(info!("{res}"))
 }
 
 async fn shuffle(matches: &ArgMatches) -> Result<(), Box<dyn std::error::Error>> {
     let status = matches.get_one::<String>("status").map(ShuffleStatus::from);
     let res = command::shuffle(status).await?;
-    log::info(res);
-    Ok(())
+    Ok(info!("{res}"))
 }
 
 async fn repeat(matches: &ArgMatches) -> Result<(), Box<dyn std::error::Error>> {
     let status = matches.get_one::<String>("status").map(RepeatStatus::from);
     let res = command::repeat(status).await?;
-    log::info(res);
-    Ok(())
+    Ok(info!("{res}"))
 }
 
 #[cfg(target_os = "windows")]

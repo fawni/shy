@@ -1,6 +1,6 @@
 use owo_colors::OwoColorize;
 
-use crate::{fmt, glyphs, helper::*, NowPlaying};
+use crate::{fmt, glyphs, helper::parse_duration, NowPlaying};
 
 pub async fn nowplaying() -> Result<String, Box<dyn std::error::Error>> {
     let np = NowPlaying::new().await?;
@@ -10,7 +10,7 @@ pub async fn nowplaying() -> Result<String, Box<dyn std::error::Error>> {
         parse_duration(pos),
         pb(pos, total),
         parse_duration(total),
-        fmt::info(np),
+        fmt::info(&np),
     );
 
     Ok(res)
