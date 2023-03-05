@@ -18,12 +18,12 @@ A command line remote controller for MusicBee
 Usage: shy.exe [COMMAND]
 
 Commands:
-  add         Add a track to queue [aliases: a]
-  clear       Clear current queue [aliases: c]
-  play        Play/pause the current track [aliases: pause, p]
+  play        Play/Pause the current track [aliases: pause, p]
   stop        Stop playback [aliases: s]
   next        Play the next track in the queue [aliases: n]
   previous    Play the previous track in the queue [aliases: prev, b]
+  add         Add track(s) to queue [aliases: a]
+  clear       Clear current queue [aliases: c]
   nowplaying  Print information about the current track [aliases: np]
   queue       List queued tracks [aliases: q, list, ls, l]
   volume      Modify player volume [aliases: vol, v]
@@ -50,20 +50,19 @@ shy seek 5 | 70% | -20% # seek 5 seconds | set position to 70% | go back 20%
 
 ## Implemented
 
-- [ ] Player commands
-  - [x] Play/pause
-  - [x] Next
-  - [x] Previous
-  - [x] Stop
-  - [x] Seek
-  - [x] Volume
-  - [x] Shuffle
-  - [x] Repeat
-  - [ ] Scrobble
-- [x] Now playing
-- [x] List queue
+- [x] Play/Pause
+- [x] Stop
+- [x] Next
+- [x] Previous
 - [x] Add to queue
 - [x] Clear queue
+- [x] Seek
+- [x] Volume
+- [x] Shuffle
+- [x] Repeat
+- [ ] Scrobble
+- [x] Now playing
+- [x] List queue
 - [ ] ~~Album art to file~~ _(useless)_
 
 ## License

@@ -8,12 +8,12 @@ use crate::{
     VALID_FORMATS,
 };
 
-pub async fn add(path: impl ToString) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn add(path: &str, next: bool) -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new();
-    if std::fs::metadata(path.to_string())?.is_dir() {
-        add_directory(&client, path).await?;
+    if std::fs::metadata(path)?.is_dir() {
+        add_directory(&client, path, next).await?;
     } else {
-        add_file(&client, path).await?;
+        add_file(&client, path, next).await?;
     }
 
     Ok(())
@@ -193,32 +193,35 @@ pub async fn repeat(
     Ok(res)
 }
 
-async fn add_file(c: &Client, path: impl ToString) -> Result<(), Box<dyn std::error::Error>> {
-    let absolute_path = std::fs::canonicalize(path.to_string())?
-        .to_string_lossy()
-        .to_string();
-    let encoded = urlencoding::encode(absolute_path.trim_end_matches(r"\\?\"));
+async fn add_file(
+    client: &Client,
+    path: &str,
+    next: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let absolute_path = std::fs::canonicalize(path)?.to_string_lossy().into_owned();
+    let encoded = urlencoding::encode(&absolute_path);
+    let endpoint = if next { "ADDNEXT" } else { "ADDITEM" };
 
-    info!(
-        "Adding \"{}\"",
-        Path::file_name(Path::new(&path.to_string()))
-            .unwrap()
-            .to_string_lossy()
-    );
-    _ = c.get(fmt::url_path("ADDITEM", &encoded)).send().await;
+    client.get(fmt::url_path(endpoint, &encoded)).send().await?;
+    let name = Path::file_name(Path::new(&path)).unwrap().to_string_lossy();
 
-    Ok(())
+    Ok(info!("Added \"{name}\""))
 }
 
-async fn add_directory(c: &Client, path: impl ToString) -> Result<(), Box<dyn std::error::Error>> {
+async fn add_directory(
+    c: &Client,
+    path: impl ToString,
+    next: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
     for file in std::fs::read_dir(path.to_string())? {
         let path = file?.path();
         let ext = match &path.extension() {
             Some(ext) => ext.to_str().unwrap(),
             None => continue,
         };
+
         if VALID_FORMATS.contains(&ext) {
-            add_file(c, path.display()).await?;
+            add_file(c, path.to_str().unwrap(), next).await?;
         }
     }
 

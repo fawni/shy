@@ -29,9 +29,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 async fn add(matches: &ArgMatches) -> Result<(), Box<dyn std::error::Error>> {
-    let paths = matches.get_many::<String>("track").unwrap();
+    let paths = matches.get_many::<String>("track(s)").unwrap();
+    let next = matches.get_one::<bool>("next").unwrap_or(&false);
     for path in paths {
-        command::add(path).await?;
+        command::add(path, *next).await?;
     }
     Ok(())
 }

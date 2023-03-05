@@ -3,19 +3,8 @@ use clap::{builder::PossibleValuesParser, command, Arg, Command};
 pub fn get_app() -> Command {
     command!()
         .subcommand(
-            Command::new("add")
-                .about("Add a track to queue")
-                .visible_alias("a")
-                .arg(Arg::new("track").num_args(1..)),
-        )
-        .subcommand(
-            Command::new("clear")
-                .about("Clear current queue")
-                .visible_alias("c"),
-        )
-        .subcommand(
             Command::new("play")
-                .about("Play/pause the current track")
+                .about("Play/Pause the current track")
                 .visible_aliases(["pause", "p"]),
         )
         .subcommand(
@@ -32,6 +21,18 @@ pub fn get_app() -> Command {
             Command::new("previous")
                 .about("Play the previous track in the queue")
                 .visible_aliases(["prev", "b"]),
+        )
+        .subcommand(
+            Command::new("add")
+                .about("Add track(s) to queue")
+                .visible_alias("a")
+                .arg(Arg::new("next").long("next").short('n').num_args(0))
+                .arg(Arg::new("track(s)").num_args(1..)),
+        )
+        .subcommand(
+            Command::new("clear")
+                .about("Clear current queue")
+                .visible_alias("c"),
         )
         .subcommand(
             Command::new("nowplaying")
