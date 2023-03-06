@@ -1,18 +1,22 @@
+use async_once::AsyncOnce;
 use lazy_static::lazy_static;
 use reqwest::Client;
 use roxmltree::Document;
 use serde::Deserialize;
 
-pub mod command;
-pub mod macros;
-pub mod playback;
+pub mod player;
 
 mod fmt;
 mod glyphs;
 mod helper;
+mod macros;
 
 lazy_static! {
-    static ref API_BASE: String = format!("http://localhost:{}", get_port().unwrap());
+    static ref API_BASE: AsyncOnce<String> = AsyncOnce::new(async {
+        let port = get_port().await.unwrap();
+
+        format!("http://localhost:{port}")
+    });
 }
 
 static VALID_FORMATS: [&str; 29] = [
@@ -43,14 +47,14 @@ struct NowPlaying {
 
 impl NowPlaying {
     async fn new() -> Result<Self, Box<dyn std::error::Error>> {
-        let body = reqwest::get(fmt::url("NP")).await?.text().await?;
+        let body = reqwest::get(fmt::url("NP").await).await?.text().await?;
         let np: Self = serde_json::from_str(&body)?;
 
         Ok(np)
     }
 
     async fn with(c: &Client) -> Result<Self, Box<dyn std::error::Error>> {
-        let body = c.get(fmt::url("NP")).send().await?.text().await?;
+        let body = c.get(fmt::url("NP").await).send().await?.text().await?;
         let np: Self = serde_json::from_str(&body)?;
 
         Ok(np)
@@ -138,21 +142,19 @@ impl From<&String> for RepeatStatus {
     }
 }
 
-fn get_port() -> Result<String, Box<dyn std::error::Error>> {
-    let config_dir = dirs::config_dir()
-        .unwrap()
-        .into_os_string()
-        .into_string()
-        .unwrap();
-    let file = std::fs::read_to_string(format!("{config_dir}\\MusicBee\\WWWServerconfig.xml"))?;
+async fn get_port() -> Result<String, Box<dyn std::error::Error>> {
+    let dir = dirs::config_dir().unwrap();
+    let file = tokio::fs::read_to_string(format!(
+        "{}\\MusicBee\\WWWServerconfig.xml",
+        dir.to_string_lossy()
+    ))
+    .await?;
     let doc = Document::parse(&file)?;
-    let port = doc
-        .descendants()
+    let port = Document::descendants(&doc)
         .find(|n| n.has_tag_name("port"))
-        .unwrap()
-        .text()
-        .unwrap()
-        .to_string();
+        .and_then(|n| n.text())
+        .map(|n| n.to_string())
+        .unwrap();
 
     Ok(port)
 }

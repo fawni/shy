@@ -18,7 +18,12 @@ pub async fn nowplaying() -> Result<String, Box<dyn std::error::Error>> {
 
 pub async fn queue() -> Result<String, Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
-    let body = client.get(fmt::url("PL")).send().await?.text().await?;
+    let body = client
+        .get(fmt::url("PL").await)
+        .send()
+        .await?
+        .text()
+        .await?;
     let queue: Vec<NowPlaying> = serde_json::from_str(&body)?;
     let np = NowPlaying::with(&client).await?;
     let mut res = String::new();

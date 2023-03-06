@@ -10,7 +10,7 @@ use crate::{
 
 pub async fn add(path: &str, next: bool) -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new();
-    if std::fs::metadata(path)?.is_dir() {
+    if tokio::fs::metadata(path).await?.is_dir() {
         add_directory(&client, path, next).await?;
     } else {
         add_file(&client, path, next).await?;
@@ -20,13 +20,13 @@ pub async fn add(path: &str, next: bool) -> Result<(), Box<dyn std::error::Error
 }
 
 pub async fn clear() -> Result<String, Box<dyn std::error::Error>> {
-    reqwest::get(fmt::url("CLEAR")).await?;
+    reqwest::get(fmt::url("CLEAR").await).await?;
     let res = format!("{} Cleared queue", glyphs::CLEAR.red());
     Ok(res)
 }
 
 pub async fn play() -> Result<String, Box<dyn std::error::Error>> {
-    reqwest::get(fmt::url("C_PP")).await?;
+    reqwest::get(fmt::url("C_PP").await).await?;
     let np = NowPlaying::new().await?;
     match np.playing {
         Some(PlayingStatus::Playing) => {
@@ -52,7 +52,7 @@ pub async fn play() -> Result<String, Box<dyn std::error::Error>> {
 }
 
 pub async fn stop() -> Result<String, Box<dyn std::error::Error>> {
-    reqwest::get(fmt::url("C_STOP")).await?;
+    reqwest::get(fmt::url("C_STOP").await).await?;
     let np = NowPlaying::new().await?;
     let res = format!(
         "{} {} by {}",
@@ -67,7 +67,7 @@ pub async fn stop() -> Result<String, Box<dyn std::error::Error>> {
 pub async fn next() -> Result<String, Box<dyn std::error::Error>> {
     let client = Client::new();
     let old = NowPlaying::with(&client).await?;
-    client.get(fmt::url("C_NEXT")).send().await?;
+    client.get(fmt::url("C_NEXT").await).send().await?;
     let np = NowPlaying::with(&client).await?;
     let res = format!(
         "{} {} by {}\n{} {} by {}",
@@ -85,7 +85,7 @@ pub async fn next() -> Result<String, Box<dyn std::error::Error>> {
 pub async fn previous() -> Result<String, Box<dyn std::error::Error>> {
     let client = Client::new();
     let old = NowPlaying::with(&client).await?;
-    client.get(fmt::url("C_PREV")).send().await?;
+    client.get(fmt::url("C_PREV").await).send().await?;
     let np = NowPlaying::with(&client).await?;
 
     let res = format!(
@@ -105,10 +105,7 @@ pub async fn volume(amount: Option<impl ToString>) -> Result<String, Box<dyn std
     let res = if let Some(amount) = amount {
         let client = Client::new();
         client
-            .get(fmt::url_path(
-                "C_VOL",
-                &helper::parse_volume(amount.to_string()).await?,
-            ))
+            .get(fmt::url_path("C_VOL", &helper::parse_volume(amount.to_string()).await?).await)
             .send()
             .await?;
         format!(
@@ -126,11 +123,8 @@ pub async fn volume(amount: Option<impl ToString>) -> Result<String, Box<dyn std
 }
 
 pub async fn seek(amount: impl ToString) -> Result<String, Box<dyn std::error::Error>> {
-    reqwest::get(fmt::url_path(
-        "C_SEEK",
-        &helper::parse_position(amount.to_string()).await?,
-    ))
-    .await?;
+    reqwest::get(fmt::url_path("C_SEEK", &helper::parse_position(amount.to_string()).await?).await)
+        .await?;
     let res = if amount.to_string().ends_with('%') {
         format!("Set position to {}", amount.to_string().bold())
     } else {
@@ -151,11 +145,11 @@ pub async fn shuffle(
 
     let res = match status {
         Some(ShuffleStatus::Off) => {
-            client.get(fmt::url_path("C_SHUF", &0)).send().await?;
+            client.get(fmt::url_path("C_SHUF", &0).await).send().await?;
             "Turned shuffle OFF".to_owned()
         }
         Some(ShuffleStatus::On) => {
-            client.get(fmt::url_path("C_SHUF", &1)).send().await?;
+            client.get(fmt::url_path("C_SHUF", &1).await).send().await?;
             "Turned shuffle ON".to_owned()
         }
         _ => unreachable!(),
@@ -176,15 +170,15 @@ pub async fn repeat(
 
     let res = match status {
         Some(RepeatStatus::None) => {
-            client.get(fmt::url_path("C_REP", &0)).send().await?;
+            client.get(fmt::url_path("C_REP", &0).await).send().await?;
             "Changed loop to OFF".to_string()
         }
         Some(RepeatStatus::All) => {
-            client.get(fmt::url_path("C_REP", &1)).send().await?;
+            client.get(fmt::url_path("C_REP", &1).await).send().await?;
             "Changed loop to ALL".to_string()
         }
         Some(RepeatStatus::Single) => {
-            client.get(fmt::url_path("C_REP", &2)).send().await?;
+            client.get(fmt::url_path("C_REP", &2).await).send().await?;
             "Changed loop to TRACK".to_string()
         }
         _ => unreachable!(),
@@ -198,11 +192,17 @@ async fn add_file(
     path: &str,
     next: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let absolute_path = std::fs::canonicalize(path)?.to_string_lossy().into_owned();
+    let absolute_path = tokio::fs::canonicalize(path)
+        .await?
+        .to_string_lossy()
+        .into_owned();
     let encoded = urlencoding::encode(&absolute_path);
     let endpoint = if next { "ADDNEXT" } else { "ADDITEM" };
 
-    client.get(fmt::url_path(endpoint, &encoded)).send().await?;
+    client
+        .get(fmt::url_path(endpoint, &encoded).await)
+        .send()
+        .await?;
     let name = Path::file_name(Path::new(&path)).unwrap().to_string_lossy();
 
     Ok(info!("Added \"{name}\""))

@@ -1,6 +1,6 @@
 use clap::ArgMatches;
 use owo_colors::OwoColorize;
-use shy::{command, info, playback, RepeatStatus, ShuffleStatus};
+use shy::{info, player::command, player::playback, RepeatStatus, ShuffleStatus};
 
 mod args;
 
