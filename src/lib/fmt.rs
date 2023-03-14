@@ -1,13 +1,15 @@
 use owo_colors::OwoColorize;
 
-use crate::{NowPlaying, API_BASE};
+use crate::NowPlaying;
 
-pub async fn url(endpoint: impl ToString) -> String {
-    format!("{}/{}", API_BASE.get().await, endpoint.to_string())
-}
-
-pub async fn url_path(endpoint: &str, path: &impl ToString) -> String {
-    format!("{}/{}?{}", API_BASE.get().await, endpoint, path.to_string())
+#[macro_export]
+macro_rules! url {
+    ($e:literal) => {
+        format!("{}/{}", $crate::API_BASE.get().await, $e)
+    };
+    ($e:expr, $p:expr) => {
+        format!("{}/{}?{}", $crate::API_BASE.get().await, $e, $p)
+    };
 }
 
 pub(crate) fn info(np: &NowPlaying) -> String {

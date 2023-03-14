@@ -1,6 +1,6 @@
 use owo_colors::OwoColorize;
 
-use crate::{fmt, glyphs, helper::parse_duration, NowPlaying};
+use crate::{fmt, glyphs, helper::parse_duration, url, NowPlaying};
 
 pub async fn nowplaying() -> Result<String, Box<dyn std::error::Error>> {
     let np = NowPlaying::new().await?;
@@ -18,29 +18,27 @@ pub async fn nowplaying() -> Result<String, Box<dyn std::error::Error>> {
 
 pub async fn queue() -> Result<String, Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
-    let body = client
-        .get(fmt::url("PL").await)
-        .send()
-        .await?
-        .text()
-        .await?;
+    let body = client.get(url!("PL")).send().await?.text().await?;
     let queue: Vec<NowPlaying> = serde_json::from_str(&body)?;
     let np = NowPlaying::with(&client).await?;
-    let mut res = String::new();
-    for (i, track) in queue.iter().enumerate() {
-        let prefix = if np.file == track.file {
-            format!("{} ", glyphs::PLAY.green())
-        } else {
-            format!("{i}.")
-        };
+    let res = queue
+        .iter()
+        .enumerate()
+        .map(|(i, track)| {
+            let prefix = if np.file == track.file {
+                format!("{} ", glyphs::PLAY.green())
+            } else {
+                format!("{i}.")
+            };
 
-        res += &format!("{} {} by {}\n", prefix, track.title.bold(), track.artist);
-    }
+            format!("{} {} by {}\n", prefix, track.title.bold(), track.artist)
+        })
+        .collect::<String>();
 
-    Ok(res.trim_end().to_string())
+    Ok(res.trim_end().to_owned())
 }
 
-fn pb(pos: u32, total: u32) -> String {
+fn pb(pos: i32, total: i32) -> String {
     const BAR_LENGTH: usize = 25;
     let (c, t) = (pos as usize, total as usize);
     let p = if c == 0 {

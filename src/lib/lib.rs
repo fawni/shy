@@ -3,13 +3,14 @@ use lazy_static::lazy_static;
 use reqwest::Client;
 use roxmltree::Document;
 use serde::Deserialize;
+use tokio::fs;
 
 pub mod player;
 
 mod fmt;
 mod glyphs;
 mod helper;
-mod macros;
+mod log;
 
 lazy_static! {
     static ref API_BASE: AsyncOnce<String> = AsyncOnce::new(async {
@@ -34,8 +35,8 @@ struct NowPlaying {
     artist: String,
     #[serde(rename = "Title")]
     title: String,
-    position: u32,
-    duration: u32,
+    position: i32,
+    duration: i32,
     file: String,
     playing: Option<PlayingStatus>,
     queued: bool,
@@ -47,14 +48,14 @@ struct NowPlaying {
 
 impl NowPlaying {
     async fn new() -> Result<Self, Box<dyn std::error::Error>> {
-        let body = reqwest::get(fmt::url("NP").await).await?.text().await?;
+        let body = reqwest::get(url!("NP")).await?.text().await?;
         let np: Self = serde_json::from_str(&body)?;
 
         Ok(np)
     }
 
-    async fn with(c: &Client) -> Result<Self, Box<dyn std::error::Error>> {
-        let body = c.get(fmt::url("NP").await).send().await?.text().await?;
+    async fn with(client: &Client) -> Result<Self, Box<dyn std::error::Error>> {
+        let body = client.get(url!("NP")).send().await?.text().await?;
         let np: Self = serde_json::from_str(&body)?;
 
         Ok(np)
@@ -75,19 +76,24 @@ pub enum PlayingStatus {
     Unkown,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum ShuffleStatus {
-    On,
     Off,
-    Toggle,
+    On,
 }
 
 impl ShuffleStatus {
     fn toggle(&self) -> Self {
         match self {
-            Self::On => Self::Off,
             Self::Off => Self::On,
-            Self::Toggle => unreachable!(),
+            Self::On => Self::Off,
+        }
+    }
+
+    fn text(&self) -> &'static str {
+        match self {
+            Self::Off => "OFF",
+            Self::On => "ON",
         }
     }
 }
@@ -102,49 +108,59 @@ impl From<bool> for ShuffleStatus {
     }
 }
 
-impl From<&String> for ShuffleStatus {
-    fn from(s: &String) -> Self {
+impl TryFrom<String> for ShuffleStatus {
+    type Error = &'static str;
+
+    fn try_from(s: String) -> Result<Self, Self::Error> {
         match s.as_str() {
-            "on" => Self::On,
-            "off" => Self::Off,
-            _ => Self::Toggle,
+            "on" => Ok(Self::On),
+            "off" => Ok(Self::Off),
+            _ => Err("Invalid shuffle status"),
         }
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum RepeatStatus {
-    None,
-    All,
-    Single,
-    Toggle,
+    Off,
+    On,
+    One,
 }
 
 impl RepeatStatus {
     fn toggle(&self) -> Self {
         match self {
-            Self::None => Self::All,
-            Self::All => Self::Single,
-            Self::Single => Self::None,
-            Self::Toggle => unreachable!(),
+            Self::Off => Self::On,
+            Self::On => Self::One,
+            Self::One => Self::Off,
+        }
+    }
+
+    fn text(&self) -> &'static str {
+        match self {
+            Self::Off => "OFF",
+            Self::On => "ON",
+            Self::One => "ONE",
         }
     }
 }
 
-impl From<&String> for RepeatStatus {
-    fn from(s: &String) -> Self {
+impl TryFrom<String> for RepeatStatus {
+    type Error = &'static str;
+
+    fn try_from(s: String) -> Result<Self, Self::Error> {
         match s.as_str() {
-            "none" | "off" => Self::None,
-            "all" | "queue" | "on" => Self::All,
-            "single" | "one" | "track" => Self::Single,
-            _ => Self::Toggle,
+            "none" | "off" => Ok(Self::Off),
+            "all" | "queue" | "on" => Ok(Self::On),
+            "single" | "one" | "track" => Ok(Self::One),
+            _ => Err("Invalid repeat status"),
         }
     }
 }
 
 async fn get_port() -> Result<String, Box<dyn std::error::Error>> {
     let dir = dirs::config_dir().unwrap();
-    let file = tokio::fs::read_to_string(format!(
+    let file = fs::read_to_string(format!(
         "{}\\MusicBee\\WWWServerconfig.xml",
         dir.to_string_lossy()
     ))
