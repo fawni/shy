@@ -1,6 +1,12 @@
-use clap::ArgMatches;
+use args::{Add, Repeat, Seek, Shuffle, ShyCommand, Volume};
+use clap::Parser;
 use owo_colors::OwoColorize;
-use shy::{info, player::command, player::playback, RepeatStatus, ShuffleStatus};
+
+use shy::{
+    info,
+    player::{command, playback},
+    RepeatStatus, ShuffleStatus,
+};
 
 mod args;
 
@@ -10,29 +16,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         enable_windows_virtual_terminal();
     }
 
-    match args::get_app().get_matches().subcommand() {
-        Some(("play", _)) => play().await,
-        Some(("stop", _)) => stop().await,
-        Some(("next", _)) => next().await,
-        Some(("previous", _)) => previous().await,
-        Some(("nowplaying", _)) => now_playing().await,
-        Some(("queue", _)) => queue().await,
-        Some(("clear", _)) => clear().await,
-        Some(("add", cmd)) => add(cmd).await,
-        Some(("seek", cmd)) => seek(cmd).await,
-        Some(("volume", cmd)) => volume(cmd).await,
-        Some(("shuffle", cmd)) => shuffle(cmd).await,
-        Some(("repeat", cmd)) => repeat(cmd).await,
-        None => Ok(args::get_app().print_help()?),
-        _ => unreachable!(),
+    match args::ShyArgs::parse().command {
+        ShyCommand::Play(_) => play().await,
+        ShyCommand::Stop(_) => stop().await,
+        ShyCommand::Next(_) => next().await,
+        ShyCommand::Previous(_) => previous().await,
+        ShyCommand::NowPlaying(_) => now_playing().await,
+        ShyCommand::Queue(_) => queue().await,
+        ShyCommand::Clear(_) => clear().await,
+        ShyCommand::Add(args) => add(args).await,
+        ShyCommand::Volume(args) => volume(args).await,
+        ShyCommand::Seek(args) => seek(args).await,
+        ShyCommand::Shuffle(args) => shuffle(args).await,
+        ShyCommand::Repeat(args) => repeat(args).await,
     }
 }
 
-async fn add(matches: &ArgMatches) -> Result<(), Box<dyn std::error::Error>> {
-    let paths = matches.get_many::<String>("track(s)").unwrap();
-    let next = matches.get_one::<bool>("next").unwrap_or(&false);
+async fn add(add_args: Add) -> Result<(), Box<dyn std::error::Error>> {
+    let paths = add_args.tracks;
+    let next = add_args.next;
     for path in paths {
-        command::add(path, *next).await?;
+        command::add(&path, next).await?;
     }
     Ok(())
 }
@@ -72,28 +76,28 @@ async fn previous() -> Result<(), Box<dyn std::error::Error>> {
     Ok(println!("{res}"))
 }
 
-async fn volume(matches: &ArgMatches) -> Result<(), Box<dyn std::error::Error>> {
-    let amount = matches.get_one::<String>("amount");
+async fn volume(volume_args: Volume) -> Result<(), Box<dyn std::error::Error>> {
+    let amount = volume_args.amount;
     let res = command::volume(amount).await?;
-    Ok(info!("{res}"))
+    Ok(info!("Volume: {}%", res.bold()))
 }
 
-async fn seek(matches: &ArgMatches) -> Result<(), Box<dyn std::error::Error>> {
-    let amount = matches.get_one::<String>("amount").unwrap();
+async fn seek(seek_args: Seek) -> Result<(), Box<dyn std::error::Error>> {
+    let amount = seek_args.amount;
     let res = command::seek(amount).await?;
     Ok(info!("{res}"))
 }
 
-async fn shuffle(matches: &ArgMatches) -> Result<(), Box<dyn std::error::Error>> {
-    let status = matches.get_one::<String>("status").map(ShuffleStatus::from);
+async fn shuffle(shuffle_args: Shuffle) -> Result<(), Box<dyn std::error::Error>> {
+    let status = shuffle_args.status.map(ShuffleStatus::try_from);
     let res = command::shuffle(status).await?;
-    Ok(info!("{res}"))
+    Ok(info!("Shuffle: {}", res.bold()))
 }
 
-async fn repeat(matches: &ArgMatches) -> Result<(), Box<dyn std::error::Error>> {
-    let status = matches.get_one::<String>("status").map(RepeatStatus::from);
+async fn repeat(repeat_args: Repeat) -> Result<(), Box<dyn std::error::Error>> {
+    let status = repeat_args.status.map(RepeatStatus::try_from);
     let res = command::repeat(status).await?;
-    Ok(info!("{res}"))
+    Ok(info!("Repeat: {}", res.bold()))
 }
 
 #[cfg(target_os = "windows")]

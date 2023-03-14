@@ -2,15 +2,16 @@ use std::path::Path;
 
 use owo_colors::OwoColorize;
 use reqwest::Client;
+use tokio::fs;
 
 use crate::{
-    fmt, glyphs, helper, info, NowPlaying, PlayingStatus, RepeatStatus, ShuffleStatus,
+    glyphs, helper, info, url, NowPlaying, PlayingStatus, RepeatStatus, ShuffleStatus,
     VALID_FORMATS,
 };
 
 pub async fn add(path: &str, next: bool) -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new();
-    if tokio::fs::metadata(path).await?.is_dir() {
+    if fs::metadata(path).await?.is_dir() {
         add_directory(&client, path, next).await?;
     } else {
         add_file(&client, path, next).await?;
@@ -20,13 +21,13 @@ pub async fn add(path: &str, next: bool) -> Result<(), Box<dyn std::error::Error
 }
 
 pub async fn clear() -> Result<String, Box<dyn std::error::Error>> {
-    reqwest::get(fmt::url("CLEAR").await).await?;
+    reqwest::get(url!("CLEAR")).await?;
     let res = format!("{} Cleared queue", glyphs::CLEAR.red());
     Ok(res)
 }
 
 pub async fn play() -> Result<String, Box<dyn std::error::Error>> {
-    reqwest::get(fmt::url("C_PP").await).await?;
+    reqwest::get(url!("C_PP")).await?;
     let np = NowPlaying::new().await?;
     match np.playing {
         Some(PlayingStatus::Playing) => {
@@ -52,7 +53,7 @@ pub async fn play() -> Result<String, Box<dyn std::error::Error>> {
 }
 
 pub async fn stop() -> Result<String, Box<dyn std::error::Error>> {
-    reqwest::get(fmt::url("C_STOP").await).await?;
+    reqwest::get(url!("C_STOP")).await?;
     let np = NowPlaying::new().await?;
     let res = format!(
         "{} {} by {}",
@@ -67,7 +68,7 @@ pub async fn stop() -> Result<String, Box<dyn std::error::Error>> {
 pub async fn next() -> Result<String, Box<dyn std::error::Error>> {
     let client = Client::new();
     let old = NowPlaying::with(&client).await?;
-    client.get(fmt::url("C_NEXT").await).send().await?;
+    client.get(url!("C_NEXT")).send().await?;
     let np = NowPlaying::with(&client).await?;
     let res = format!(
         "{} {} by {}\n{} {} by {}",
@@ -85,7 +86,7 @@ pub async fn next() -> Result<String, Box<dyn std::error::Error>> {
 pub async fn previous() -> Result<String, Box<dyn std::error::Error>> {
     let client = Client::new();
     let old = NowPlaying::with(&client).await?;
-    client.get(fmt::url("C_PREV").await).send().await?;
+    client.get(url!("C_PREV")).send().await?;
     let np = NowPlaying::with(&client).await?;
 
     let res = format!(
@@ -101,90 +102,72 @@ pub async fn previous() -> Result<String, Box<dyn std::error::Error>> {
     Ok(res)
 }
 
-pub async fn volume(amount: Option<impl ToString>) -> Result<String, Box<dyn std::error::Error>> {
+pub async fn volume(amount: Option<String>) -> Result<String, Box<dyn std::error::Error>> {
     let res = if let Some(amount) = amount {
         let client = Client::new();
-        client
-            .get(fmt::url_path("C_VOL", &helper::parse_volume(amount.to_string()).await?).await)
-            .send()
-            .await?;
-        format!(
-            "Volume set to {}%",
-            (NowPlaying::with(&client).await?.volume * 100.0).bold()
-        )
+        let volume = helper::parse_volume(amount).await?;
+        client.get(url!("C_VOL", &volume)).send().await?;
+        let volume = NowPlaying::with(&client).await?.volume * 100.0;
+
+        volume.to_string()
     } else {
         let np = NowPlaying::new().await?;
-        let volume = format!("{}%", (np.volume * 100.0) as u8);
+        let volume = (np.volume * 100.0) as u8;
 
-        return Ok(volume);
+        volume.to_string()
     };
 
     Ok(res)
 }
 
-pub async fn seek(amount: impl ToString) -> Result<String, Box<dyn std::error::Error>> {
-    reqwest::get(fmt::url_path("C_SEEK", &helper::parse_position(amount.to_string()).await?).await)
-        .await?;
-    let res = if amount.to_string().ends_with('%') {
-        format!("Set position to {}", amount.to_string().bold())
+pub async fn seek(amount: String) -> Result<String, Box<dyn std::error::Error>> {
+    let pos = helper::parse_position(amount.clone()).await?.to_string();
+    reqwest::get(url!("C_SEEK", &pos)).await?;
+    let res = if amount.ends_with('%') {
+        format!("Set position to {}", amount.bold())
     } else {
-        format!("Seeked {} seconds", amount.to_string().bold())
+        format!("Seeked {} seconds", amount.bold())
     };
 
     Ok(res)
 }
 
 pub async fn shuffle(
-    mut status: Option<ShuffleStatus>,
-) -> Result<String, Box<dyn std::error::Error>> {
+    status: Option<Result<ShuffleStatus, &str>>,
+) -> Result<&str, Box<dyn std::error::Error>> {
     let client = Client::new();
-    if let None | Some(ShuffleStatus::Toggle) = status {
-        let current_status = ShuffleStatus::from(NowPlaying::with(&client).await?.shuffle);
-        status = Some(ShuffleStatus::toggle(&current_status));
+    let status = match status {
+        Some(status) => status?,
+        None => {
+            let current_status = ShuffleStatus::from(NowPlaying::with(&client).await?.shuffle);
+            ShuffleStatus::toggle(&current_status)
+        }
     };
 
-    let res = match status {
-        Some(ShuffleStatus::Off) => {
-            client.get(fmt::url_path("C_SHUF", &0).await).send().await?;
-            "Turned shuffle OFF".to_owned()
-        }
-        Some(ShuffleStatus::On) => {
-            client.get(fmt::url_path("C_SHUF", &1).await).send().await?;
-            "Turned shuffle ON".to_owned()
-        }
-        _ => unreachable!(),
-    };
+    let path = (status as u8).to_string();
+    client.get(url!("C_SHUF", &path)).send().await?;
 
-    Ok(res)
+    Ok(status.text())
 }
 
 pub async fn repeat(
-    mut status: Option<RepeatStatus>,
-) -> Result<String, Box<dyn std::error::Error>> {
+    status: Option<Result<RepeatStatus, &str>>,
+) -> Result<&str, Box<dyn std::error::Error>> {
     let client = Client::new();
-    if let None | Some(RepeatStatus::Toggle) = status {
-        let current_status =
-            RepeatStatus::from(&NowPlaying::with(&client).await?.repeat.unwrap_or_default());
-        status = Some(RepeatStatus::toggle(&current_status));
+    let status = match status {
+        Some(status) => status?,
+        None => {
+            let current_status = RepeatStatus::try_from(
+                NowPlaying::with(&client).await?.repeat.unwrap_or_default(),
+            )?;
+            RepeatStatus::toggle(&current_status)
+        }
     };
 
-    let res = match status {
-        Some(RepeatStatus::None) => {
-            client.get(fmt::url_path("C_REP", &0).await).send().await?;
-            "Changed loop to OFF".to_string()
-        }
-        Some(RepeatStatus::All) => {
-            client.get(fmt::url_path("C_REP", &1).await).send().await?;
-            "Changed loop to ALL".to_string()
-        }
-        Some(RepeatStatus::Single) => {
-            client.get(fmt::url_path("C_REP", &2).await).send().await?;
-            "Changed loop to TRACK".to_string()
-        }
-        _ => unreachable!(),
-    };
+    let path = (status as u8).to_string();
+    client.get(url!("C_REP", &path)).send().await?;
 
-    Ok(res)
+    Ok(status.text())
 }
 
 async fn add_file(
@@ -192,28 +175,22 @@ async fn add_file(
     path: &str,
     next: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let absolute_path = tokio::fs::canonicalize(path)
-        .await?
-        .to_string_lossy()
-        .into_owned();
+    let absolute_path = fs::canonicalize(path).await?.to_string_lossy().into_owned();
     let encoded = urlencoding::encode(&absolute_path);
     let endpoint = if next { "ADDNEXT" } else { "ADDITEM" };
 
-    client
-        .get(fmt::url_path(endpoint, &encoded).await)
-        .send()
-        .await?;
+    client.get(url!(endpoint, &encoded)).send().await?;
     let name = Path::file_name(Path::new(&path)).unwrap().to_string_lossy();
 
     Ok(info!("Added \"{name}\""))
 }
 
 async fn add_directory(
-    c: &Client,
-    path: impl ToString,
+    client: &Client,
+    path: &str,
     next: bool,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    for file in std::fs::read_dir(path.to_string())? {
+    for file in std::fs::read_dir(path)? {
         let path = file?.path();
         let ext = match &path.extension() {
             Some(ext) => ext.to_str().unwrap(),
@@ -221,7 +198,7 @@ async fn add_directory(
         };
 
         if VALID_FORMATS.contains(&ext) {
-            add_file(c, path.to_str().unwrap(), next).await?;
+            add_file(client, path.to_str().unwrap(), next).await?;
         }
     }
 
