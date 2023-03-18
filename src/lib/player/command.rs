@@ -22,6 +22,7 @@ pub async fn add(path: &str, next: bool) -> Result<(), Box<dyn std::error::Error
 pub async fn clear() -> Result<String, Box<dyn std::error::Error>> {
     reqwest::get(url!("CLEAR")).await?;
     let res = format!("{} Cleared queue", glyphs::CLEAR.red());
+
     Ok(res)
 }
 

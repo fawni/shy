@@ -37,69 +37,81 @@ async fn add(add_args: Add) -> Result<(), Box<dyn std::error::Error>> {
     for path in paths {
         command::add(&path, next).await?;
     }
+
     Ok(())
 }
 
 async fn clear() -> Result<(), Box<dyn std::error::Error>> {
     let res = command::clear().await?;
+
     Ok(println!("{res}"))
 }
 
 async fn now_playing() -> Result<(), Box<dyn std::error::Error>> {
     let res = playback::nowplaying().await?;
+
     Ok(println!("{res}"))
 }
 
 async fn queue() -> Result<(), Box<dyn std::error::Error>> {
     let res = playback::queue().await?;
+
     Ok(println!("{res}"))
 }
 
 async fn play() -> Result<(), Box<dyn std::error::Error>> {
     let res = command::play().await?;
+
     Ok(println!("{res}"))
 }
 
 async fn stop() -> Result<(), Box<dyn std::error::Error>> {
     let res = command::stop().await?;
+
     Ok(println!("{res}"))
 }
 
 async fn next() -> Result<(), Box<dyn std::error::Error>> {
     let res = command::next().await?;
+
     Ok(println!("{res}"))
 }
 
 async fn previous() -> Result<(), Box<dyn std::error::Error>> {
     let res = command::previous().await?;
+
     Ok(println!("{res}"))
 }
 
 async fn volume(volume_args: Volume) -> Result<(), Box<dyn std::error::Error>> {
     let amount = volume_args.amount;
     let res = command::volume(amount).await?;
+
     Ok(info!("Volume: {}%", res.bold()))
 }
 
 async fn seek(seek_args: Seek) -> Result<(), Box<dyn std::error::Error>> {
     let amount = seek_args.position;
     let res = command::seek(amount).await?;
+
     Ok(info!("{res}"))
 }
 
 async fn shuffle(shuffle_args: Shuffle) -> Result<(), Box<dyn std::error::Error>> {
     let status = shuffle_args.mode;
     let res = command::shuffle(status).await?;
+
     Ok(info!("Shuffle: {}", res.bold()))
 }
 
 async fn repeat(repeat_args: Repeat) -> Result<(), Box<dyn std::error::Error>> {
     let status = repeat_args.mode;
     let res = command::repeat(status).await?;
+
     Ok(info!("Repeat: {}", res.bold()))
 }
 
-#[cfg(target_os = "windows")]
+#[cfg(windows)]
 fn enable_windows_virtual_terminal() {
     use winapi::{
         shared::minwindef::DWORD,
