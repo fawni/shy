@@ -5,8 +5,7 @@ use reqwest::Client;
 use tokio::fs;
 
 use crate::{
-    glyphs, helper, info, url, NowPlaying, PlayingStatus, RepeatStatus, ShuffleStatus,
-    VALID_FORMATS,
+    glyphs, helper, info, url, NowPlaying, PlayingStatus, RepeatMode, ShuffleMode, VALID_FORMATS,
 };
 
 pub async fn add(path: &str, next: bool) -> Result<(), Box<dyn std::error::Error>> {
@@ -132,15 +131,13 @@ pub async fn seek(amount: String) -> Result<String, Box<dyn std::error::Error>> 
     Ok(res)
 }
 
-pub async fn shuffle(
-    status: Option<Result<ShuffleStatus, &str>>,
-) -> Result<&str, Box<dyn std::error::Error>> {
+pub async fn shuffle(status: Option<ShuffleMode>) -> Result<String, Box<dyn std::error::Error>> {
     let client = Client::new();
     let status = match status {
-        Some(status) => status?,
+        Some(status) => status,
         None => {
-            let current_status = ShuffleStatus::from(NowPlaying::with(&client).await?.shuffle);
-            ShuffleStatus::toggle(&current_status)
+            let current_status = ShuffleMode::from(NowPlaying::with(&client).await?.shuffle);
+            ShuffleMode::toggle(current_status)
         }
     };
 
@@ -150,17 +147,14 @@ pub async fn shuffle(
     Ok(status.text())
 }
 
-pub async fn repeat(
-    status: Option<Result<RepeatStatus, &str>>,
-) -> Result<&str, Box<dyn std::error::Error>> {
+pub async fn repeat(status: Option<RepeatMode>) -> Result<String, Box<dyn std::error::Error>> {
     let client = Client::new();
     let status = match status {
-        Some(status) => status?,
+        Some(status) => status,
         None => {
-            let current_status = RepeatStatus::try_from(
-                NowPlaying::with(&client).await?.repeat.unwrap_or_default(),
-            )?;
-            RepeatStatus::toggle(&current_status)
+            let current_status =
+                RepeatMode::from(NowPlaying::with(&client).await?.repeat.unwrap_or_default());
+            RepeatMode::toggle(current_status)
         }
     };
 

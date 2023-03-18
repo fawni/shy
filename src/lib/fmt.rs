@@ -12,7 +12,7 @@ macro_rules! url {
     };
 }
 
-pub(crate) fn info(np: &NowPlaying) -> String {
+pub fn info(np: &NowPlaying) -> String {
     let total_hours = np.duration / 1000 / 60 / 60;
     let played_hours = np.position / 1000 / 60 / 60;
 

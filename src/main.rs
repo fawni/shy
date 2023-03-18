@@ -5,7 +5,6 @@ use owo_colors::OwoColorize;
 use shy::{
     info,
     player::{command, playback},
-    RepeatStatus, ShuffleStatus,
 };
 
 mod args;
@@ -83,19 +82,19 @@ async fn volume(volume_args: Volume) -> Result<(), Box<dyn std::error::Error>> {
 }
 
 async fn seek(seek_args: Seek) -> Result<(), Box<dyn std::error::Error>> {
-    let amount = seek_args.amount;
+    let amount = seek_args.position;
     let res = command::seek(amount).await?;
     Ok(info!("{res}"))
 }
 
 async fn shuffle(shuffle_args: Shuffle) -> Result<(), Box<dyn std::error::Error>> {
-    let status = shuffle_args.status.map(ShuffleStatus::try_from);
+    let status = shuffle_args.mode;
     let res = command::shuffle(status).await?;
     Ok(info!("Shuffle: {}", res.bold()))
 }
 
 async fn repeat(repeat_args: Repeat) -> Result<(), Box<dyn std::error::Error>> {
-    let status = repeat_args.status.map(RepeatStatus::try_from);
+    let status = repeat_args.mode;
     let res = command::repeat(status).await?;
     Ok(info!("Repeat: {}", res.bold()))
 }

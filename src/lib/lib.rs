@@ -1,4 +1,5 @@
 use async_once::AsyncOnce;
+use clap::ValueEnum;
 use lazy_static::lazy_static;
 use reqwest::Client;
 use roxmltree::Document;
@@ -26,24 +27,20 @@ static VALID_FORMATS: [&str; 29] = [
     "mid", "mod", "xm",
 ];
 
-#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
-struct NowPlaying {
-    #[serde(rename = "Album")]
-    album: String,
-    #[serde(rename = "Artist")]
-    artist: String,
-    #[serde(rename = "Title")]
-    title: String,
-    position: i32,
-    duration: i32,
-    file: String,
-    playing: Option<PlayingStatus>,
-    queued: bool,
-    repeat: Option<String>,
-    scrobbling: bool,
-    shuffle: bool,
-    volume: f32,
+pub struct NowPlaying {
+    pub album: String,
+    pub artist: String,
+    pub title: String,
+    pub position: i32,
+    pub duration: i32,
+    pub file: String,
+    pub playing: Option<PlayingStatus>,
+    pub queued: bool,
+    pub repeat: Option<String>,
+    pub scrobbling: bool,
+    pub shuffle: bool,
+    pub volume: f32,
 }
 
 impl NowPlaying {
@@ -76,29 +73,13 @@ pub enum PlayingStatus {
     Unkown,
 }
 
-#[derive(Debug, Clone, Copy)]
-pub enum ShuffleStatus {
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum ShuffleMode {
     Off,
     On,
 }
 
-impl ShuffleStatus {
-    fn toggle(&self) -> Self {
-        match self {
-            Self::Off => Self::On,
-            Self::On => Self::Off,
-        }
-    }
-
-    fn text(&self) -> &'static str {
-        match self {
-            Self::Off => "OFF",
-            Self::On => "ON",
-        }
-    }
-}
-
-impl From<bool> for ShuffleStatus {
+impl From<bool> for ShuffleMode {
     fn from(b: bool) -> Self {
         if b {
             Self::On
@@ -108,27 +89,36 @@ impl From<bool> for ShuffleStatus {
     }
 }
 
-impl TryFrom<String> for ShuffleStatus {
-    type Error = &'static str;
+impl ShuffleMode {
+    const fn toggle(self) -> Self {
+        match self {
+            Self::Off => Self::On,
+            Self::On => Self::Off,
+        }
+    }
 
-    fn try_from(s: String) -> Result<Self, Self::Error> {
-        match s.as_str() {
-            "on" => Ok(Self::On),
-            "off" => Ok(Self::Off),
-            _ => Err("Invalid shuffle status"),
+    fn text(self) -> String {
+        match self {
+            Self::Off => String::from("OFF"),
+            Self::On => String::from("ON"),
         }
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub enum RepeatStatus {
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum RepeatMode {
+    /// Repeat off
     Off,
+
+    /// Repeat queue
     On,
+
+    /// Repeat track
     One,
 }
 
-impl RepeatStatus {
-    fn toggle(&self) -> Self {
+impl RepeatMode {
+    const fn toggle(self) -> Self {
         match self {
             Self::Off => Self::On,
             Self::On => Self::One,
@@ -136,24 +126,22 @@ impl RepeatStatus {
         }
     }
 
-    fn text(&self) -> &'static str {
+    fn text(self) -> String {
         match self {
-            Self::Off => "OFF",
-            Self::On => "ON",
-            Self::One => "ONE",
+            Self::Off => String::from("OFF"),
+            Self::On => String::from("ON"),
+            Self::One => String::from("ONE"),
         }
     }
 }
 
-impl TryFrom<String> for RepeatStatus {
-    type Error = &'static str;
-
-    fn try_from(s: String) -> Result<Self, Self::Error> {
+impl From<String> for RepeatMode {
+    fn from(s: String) -> Self {
         match s.as_str() {
-            "none" | "off" => Ok(Self::Off),
-            "all" | "queue" | "on" => Ok(Self::On),
-            "single" | "one" | "track" => Ok(Self::One),
-            _ => Err("Invalid repeat status"),
+            "none" | "off" => Self::Off,
+            "all" | "queue" | "on" => Self::On,
+            "single" | "track" | "one" => Self::One,
+            _ => unreachable!(),
         }
     }
 }
@@ -169,7 +157,7 @@ async fn get_port() -> Result<String, Box<dyn std::error::Error>> {
     let port = Document::descendants(&doc)
         .find(|n| n.has_tag_name("port"))
         .and_then(|n| n.text())
-        .map(|n| n.to_string())
+        .map(ToString::to_string)
         .unwrap();
 
     Ok(port)
