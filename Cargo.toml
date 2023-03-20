@@ -10,24 +10,23 @@ categories = ["command-line-utilities"]
 edition = "2021"
 
 [dependencies]
-reqwest = "0.11"
+reqwest = { version = "0.11.15", features = ["json"] }
 
-clap = { version = "4.1", features = ["cargo", "derive"] }
-owo-colors = "3.5"
+clap = { version = "4.1.11", features = ["cargo", "derive"] }
+owo-colors = "3.5.0"
+serde = { version = "1.0.158", features = ["derive"] }
 
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+winapi = "0.3.9"
 
-dirs = "4.0"
-winapi = "0.3"
-lazy_static = "1.4"
-urlencoding = "2.1"
-roxmltree = "0.18"
+dirs = "5.0.0"
+lazy_static = "1.4.0"
+urlencoding = "2.1.2"
+roxmltree = "0.18.0"
 async_once = "0.2.6"
 
 [dependencies.tokio]
 features = ["macros", "fs", "rt-multi-thread", "parking_lot"]
-version = "1.21"
+version = "1.26.0"
 
 [lib]
 name = "shy"
