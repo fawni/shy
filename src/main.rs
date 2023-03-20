@@ -11,9 +11,8 @@ mod args;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    if cfg!(windows) {
-        enable_windows_virtual_terminal();
-    }
+    #[cfg(windows)]
+    enable_windows_virtual_terminal();
 
     match args::ShyArgs::parse().command {
         ShyCommand::Play(_) => play().await,

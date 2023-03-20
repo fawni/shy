@@ -45,15 +45,13 @@ pub struct NowPlaying {
 
 impl NowPlaying {
     async fn new() -> Result<Self, Box<dyn std::error::Error>> {
-        let body = reqwest::get(url!("NP")).await?.text().await?;
-        let np: Self = serde_json::from_str(&body)?;
+        let np = reqwest::get(url!("NP")).await?.json::<Self>().await?;
 
         Ok(np)
     }
 
     async fn with(client: &Client) -> Result<Self, Box<dyn std::error::Error>> {
-        let body = client.get(url!("NP")).send().await?.text().await?;
-        let np: Self = serde_json::from_str(&body)?;
+        let np = client.get(url!("NP")).send().await?.json::<Self>().await?;
 
         Ok(np)
     }
