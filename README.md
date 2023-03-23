@@ -15,26 +15,25 @@ cargo install --git https://github.com/fawni/shy
 ```
 A command line remote controller for MusicBee
 
-Usage: shy.exe [COMMAND]
+Usage: shy.exe <COMMAND>
 
 Commands:
-  play        Play/Pause the current track [aliases: pause, p]
-  stop        Stop playback [aliases: s]
-  next        Play the next track in the queue [aliases: n]
-  previous    Play the previous track in the queue [aliases: prev, b]
-  add         Add track(s) to queue [aliases: a]
-  clear       Clear current queue [aliases: c]
-  nowplaying  Print information about the current track [aliases: np]
-  queue       List queued tracks [aliases: q, list, ls, l]
-  volume      Modify player volume [aliases: vol, v]
-  seek        Seek playback
-  shuffle     Change shuffle status
-  repeat      Change repeat status [aliases: loop, r]
-  help        Print this message or the help of the given subcommand(s)
+  play         Play or pause the current track [aliases: pause, p]
+  stop         Stop the current playing track [aliases: s]
+  next         Skip to the next track in queue [aliases: skip, n]
+  previous     Skip to the previous track in queue [aliases: prev, b]
+  add          Add track(s) to queue [aliases: a]
+  clear        Clear the current queue [aliases: c]
+  now-playing  Display the current playing track [aliases: np]
+  queue        Display the current queue [aliases: q, list, ls, l]
+  volume       Display or modify the player's volume [aliases: vol, v]
+  seek         Set the position of the track
+  shuffle      Set shuffle mode
+  repeat       Set repeat mode [aliases: loop, r]
+  help         Print this message or the help of the given subcommand(s)
 
 Options:
-  -h, --help     Print help
-  -V, --version  Print version
+  -h, --help  Print help
 ```
 
 Most subcommands have aliases which are the recommended way of usage.
