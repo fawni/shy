@@ -10,7 +10,7 @@ use shy::{
 mod args;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> miette::Result<()> {
     #[cfg(windows)]
     enable_windows_virtual_terminal();
 
@@ -30,7 +30,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 }
 
-async fn add(add_args: Add) -> Result<(), Box<dyn std::error::Error>> {
+async fn add(add_args: Add) -> miette::Result<()> {
     let paths = add_args.tracks;
     let next = add_args.next;
     for path in paths {
@@ -40,72 +40,72 @@ async fn add(add_args: Add) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-async fn clear() -> Result<(), Box<dyn std::error::Error>> {
+async fn clear() -> miette::Result<()> {
     let res = command::clear().await?;
 
     Ok(println!("{res}"))
 }
 
-async fn now_playing() -> Result<(), Box<dyn std::error::Error>> {
+async fn now_playing() -> miette::Result<()> {
     let res = playback::nowplaying().await?;
 
     Ok(println!("{res}"))
 }
 
-async fn queue() -> Result<(), Box<dyn std::error::Error>> {
+async fn queue() -> miette::Result<()> {
     let res = playback::queue().await?;
 
     Ok(println!("{res}"))
 }
 
-async fn play() -> Result<(), Box<dyn std::error::Error>> {
+async fn play() -> miette::Result<()> {
     let res = command::play().await?;
 
     Ok(println!("{res}"))
 }
 
-async fn stop() -> Result<(), Box<dyn std::error::Error>> {
+async fn stop() -> miette::Result<()> {
     let res = command::stop().await?;
 
     Ok(println!("{res}"))
 }
 
-async fn next() -> Result<(), Box<dyn std::error::Error>> {
+async fn next() -> miette::Result<()> {
     let res = command::next().await?;
 
     Ok(println!("{res}"))
 }
 
-async fn previous() -> Result<(), Box<dyn std::error::Error>> {
+async fn previous() -> miette::Result<()> {
     let res = command::previous().await?;
 
     Ok(println!("{res}"))
 }
 
-async fn volume(volume_args: Volume) -> Result<(), Box<dyn std::error::Error>> {
+async fn volume(volume_args: Volume) -> miette::Result<()> {
     let amount = volume_args.amount;
     let res = command::volume(amount).await?;
 
     Ok(info!("Volume: {}%", res.bold()))
 }
 
-async fn seek(seek_args: Seek) -> Result<(), Box<dyn std::error::Error>> {
+async fn seek(seek_args: Seek) -> miette::Result<()> {
     let amount = seek_args.position;
     let res = command::seek(amount).await?;
 
     Ok(info!("{res}"))
 }
 
-async fn shuffle(shuffle_args: Shuffle) -> Result<(), Box<dyn std::error::Error>> {
-    let status = shuffle_args.mode;
-    let res = command::shuffle(status).await?;
+async fn shuffle(shuffle_args: Shuffle) -> miette::Result<()> {
+    let mode = shuffle_args.mode;
+    let res = command::shuffle(mode).await?;
 
     Ok(info!("Shuffle: {}", res.bold()))
 }
 
-async fn repeat(repeat_args: Repeat) -> Result<(), Box<dyn std::error::Error>> {
-    let status = repeat_args.mode;
-    let res = command::repeat(status).await?;
+async fn repeat(repeat_args: Repeat) -> miette::Result<()> {
+    let mode = repeat_args.mode;
+    let res = command::repeat(mode).await?;
 
     Ok(info!("Repeat: {}", res.bold()))
 }

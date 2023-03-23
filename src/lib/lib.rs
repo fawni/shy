@@ -1,6 +1,7 @@
 use async_once::AsyncOnce;
 use clap::ValueEnum;
 use lazy_static::lazy_static;
+use miette::{Context, IntoDiagnostic};
 use reqwest::Client;
 use roxmltree::Document;
 use serde::Deserialize;
@@ -15,7 +16,7 @@ mod log;
 
 lazy_static! {
     static ref API_BASE: AsyncOnce<String> = AsyncOnce::new(async {
-        let port = get_port().await.unwrap();
+        let port = get_port().await.unwrap_or(8080.to_string());
 
         format!("http://localhost:{port}")
     });
@@ -44,14 +45,26 @@ pub struct NowPlaying {
 }
 
 impl NowPlaying {
-    async fn new() -> Result<Self, Box<dyn std::error::Error>> {
-        let np = reqwest::get(url!("NP")).await?.json::<Self>().await?;
+    async fn new() -> miette::Result<Self> {
+        let np = reqwest::get(url!("NP"))
+            .await
+            .into_diagnostic()?
+            .json::<Self>()
+            .await
+            .into_diagnostic()?;
 
         Ok(np)
     }
 
-    async fn with(client: &Client) -> Result<Self, Box<dyn std::error::Error>> {
-        let np = client.get(url!("NP")).send().await?.json::<Self>().await?;
+    async fn with(client: &Client) -> miette::Result<Self> {
+        let np = client
+            .get(url!("NP"))
+            .send()
+            .await
+            .into_diagnostic()?
+            .json::<Self>()
+            .await
+            .into_diagnostic()?;
 
         Ok(np)
     }
@@ -88,14 +101,14 @@ impl From<bool> for ShuffleMode {
 }
 
 impl ShuffleMode {
-    const fn toggle(self) -> Self {
+    const fn toggle(&self) -> Self {
         match self {
             Self::Off => Self::On,
             Self::On => Self::Off,
         }
     }
 
-    fn text(self) -> String {
+    fn text(&self) -> String {
         match self {
             Self::Off => String::from("OFF"),
             Self::On => String::from("ON"),
@@ -116,7 +129,7 @@ pub enum RepeatMode {
 }
 
 impl RepeatMode {
-    const fn toggle(self) -> Self {
+    const fn toggle(&self) -> Self {
         match self {
             Self::Off => Self::On,
             Self::On => Self::One,
@@ -124,7 +137,7 @@ impl RepeatMode {
         }
     }
 
-    fn text(self) -> String {
+    fn text(&self) -> String {
         match self {
             Self::Off => String::from("OFF"),
             Self::On => String::from("ON"),
@@ -135,7 +148,7 @@ impl RepeatMode {
 
 impl From<String> for RepeatMode {
     fn from(s: String) -> Self {
-        match s.as_str() {
+        match &*s {
             "none" | "off" => Self::Off,
             "all" | "queue" | "on" => Self::On,
             "single" | "track" | "one" => Self::One,
@@ -144,14 +157,16 @@ impl From<String> for RepeatMode {
     }
 }
 
-async fn get_port() -> Result<String, Box<dyn std::error::Error>> {
+async fn get_port() -> miette::Result<String> {
     let dir = dirs::config_dir().unwrap();
     let file = fs::read_to_string(format!(
         "{}\\MusicBee\\WWWServerconfig.xml",
         dir.to_string_lossy()
     ))
-    .await?;
-    let doc = Document::parse(&file)?;
+    .await
+    .into_diagnostic()
+    .wrap_err("mb_WWWServer::Config")?;
+    let doc = Document::parse(&file).into_diagnostic()?;
     let port = Document::descendants(&doc)
         .find(|n| n.has_tag_name("port"))
         .and_then(|n| n.text())
