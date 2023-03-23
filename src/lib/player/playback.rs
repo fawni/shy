@@ -1,8 +1,9 @@
+use miette::IntoDiagnostic;
 use owo_colors::OwoColorize;
 
 use crate::{fmt, glyphs, helper::parse_duration, url, NowPlaying};
 
-pub async fn nowplaying() -> Result<String, Box<dyn std::error::Error>> {
+pub async fn nowplaying() -> miette::Result<String> {
     let np = NowPlaying::new().await?;
     let (pos, total) = (np.position, np.duration);
     let res = format!(
@@ -16,14 +17,16 @@ pub async fn nowplaying() -> Result<String, Box<dyn std::error::Error>> {
     Ok(res)
 }
 
-pub async fn queue() -> Result<String, Box<dyn std::error::Error>> {
+pub async fn queue() -> miette::Result<String> {
     let client = reqwest::Client::new();
     let queue = client
         .get(url!("PL"))
         .send()
-        .await?
+        .await
+        .into_diagnostic()?
         .json::<Vec<NowPlaying>>()
-        .await?;
+        .await
+        .into_diagnostic()?;
     let np = NowPlaying::with(&client).await?;
     let res = queue
         .iter()
