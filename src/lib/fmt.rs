@@ -5,10 +5,10 @@ use crate::NowPlaying;
 #[macro_export]
 macro_rules! url {
     ($e:literal) => {
-        format!("{}/{}", $crate::API_BASE.get().await, $e)
+        format!("{}/{}", $crate::api_base(), $e)
     };
     ($e:expr, $p:expr) => {
-        format!("{}/{}?{}", $crate::API_BASE.get().await, $e, $p)
+        format!("{}/{}?{}", $crate::api_base(), $e, $p)
     };
 }
 

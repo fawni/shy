@@ -1,11 +1,11 @@
-use async_once::AsyncOnce;
+use std::fs;
+
 use clap::ValueEnum;
-use lazy_static::lazy_static;
 use miette::{Context, IntoDiagnostic};
+use once_cell::sync::OnceCell;
 use reqwest::Client;
 use roxmltree::Document;
 use serde::Deserialize;
-use tokio::fs;
 
 pub mod player;
 
@@ -14,12 +14,12 @@ mod glyphs;
 mod helper;
 mod log;
 
-lazy_static! {
-    static ref API_BASE: AsyncOnce<String> = AsyncOnce::new(async {
-        let port = get_port().await.unwrap_or(8080.to_string());
-
+pub fn api_base() -> &'static String {
+    static API_BASE: OnceCell<String> = OnceCell::new();
+    API_BASE.get_or_init(|| {
+        let port = get_port().unwrap_or(8080.to_string());
         format!("http://localhost:{port}")
-    });
+    })
 }
 
 static VALID_FORMATS: [&str; 29] = [
@@ -157,13 +157,12 @@ impl From<String> for RepeatMode {
     }
 }
 
-async fn get_port() -> miette::Result<String> {
+fn get_port() -> miette::Result<String> {
     let dir = dirs::config_dir().unwrap();
     let file = fs::read_to_string(format!(
         "{}\\MusicBee\\WWWServerconfig.xml",
         dir.to_string_lossy()
     ))
-    .await
     .into_diagnostic()
     .wrap_err("mb_WWWServer::Config")?;
     let doc = Document::parse(&file).into_diagnostic()?;
