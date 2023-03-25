@@ -49,7 +49,7 @@ pub async fn play() -> miette::Result<String> {
             );
             Ok(res)
         }
-        _ => Err(miette!("Failed to fetch NP")),
+        _ => Err(miette!("Could not determine playing status")),
     }
 }
 

@@ -71,15 +71,13 @@ impl NowPlaying {
 }
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum PlayingStatus {
-    #[serde(rename = "loading")]
     Loading,
-    #[serde(rename = "playing")]
     Playing,
-    #[serde(rename = "paused")]
     Paused,
-    #[serde(rename = "stopped")]
     Stopped,
+
     #[serde(other)]
     Unkown,
 }
