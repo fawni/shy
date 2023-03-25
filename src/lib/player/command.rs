@@ -3,7 +3,6 @@ use std::path::Path;
 use miette::{miette, IntoDiagnostic};
 use owo_colors::OwoColorize;
 use reqwest::Client;
-use tokio::fs;
 
 use crate::{
     glyphs, helper, info, url, NowPlaying, PlayingStatus, RepeatMode, ShuffleMode, VALID_FORMATS,
@@ -11,7 +10,11 @@ use crate::{
 
 pub async fn add(path: &str, next: bool) -> miette::Result<()> {
     let client = Client::new();
-    if fs::metadata(path).await.into_diagnostic()?.is_dir() {
+    if fs_err::tokio::metadata(path)
+        .await
+        .into_diagnostic()?
+        .is_dir()
+    {
         add_directory(&client, path, next).await?;
     } else {
         add_file(&client, path, next).await?;
@@ -179,7 +182,7 @@ pub async fn repeat(mode: Option<RepeatMode>) -> miette::Result<String> {
 }
 
 async fn add_file(client: &Client, path: &str, next: bool) -> miette::Result<()> {
-    let absolute_path = fs::canonicalize(path)
+    let absolute_path = fs_err::tokio::canonicalize(path)
         .await
         .into_diagnostic()?
         .to_string_lossy()
@@ -198,7 +201,7 @@ async fn add_file(client: &Client, path: &str, next: bool) -> miette::Result<()>
 }
 
 async fn add_directory(client: &Client, path: &str, next: bool) -> miette::Result<()> {
-    for file in std::fs::read_dir(path).into_diagnostic()? {
+    for file in fs_err::read_dir(path).into_diagnostic()? {
         let path = file.into_diagnostic()?.path();
         let ext = match &path.extension() {
             Some(ext) => ext.to_str().unwrap(),

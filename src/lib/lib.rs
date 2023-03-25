@@ -1,5 +1,3 @@
-use std::fs;
-
 use clap::ValueEnum;
 use miette::{Context, IntoDiagnostic};
 use once_cell::sync::OnceCell;
@@ -157,7 +155,7 @@ impl From<String> for RepeatMode {
 
 fn get_port() -> miette::Result<String> {
     let dir = dirs::config_dir().unwrap();
-    let file = fs::read_to_string(format!(
+    let file = fs_err::read_to_string(format!(
         "{}\\MusicBee\\WWWServerconfig.xml",
         dir.to_string_lossy()
     ))
