@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  publish:
+    name: x86_64-pc-windows-msvc
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 1
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+          target: x86_64-pc-windows-msvc
+
+      - name: rust cache restore
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: cargo-x86_64-pc-windows-msvc-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: false
+          command: build
+          args: --target x86_64-pc-windows-msvc --release --locked
+
+      - name: Rename files
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+          mkdir output/
+          mv target/x86_64-pc-windows-msvc/release/shy.exe output/shy-$env:VERSION-x86_64-pc-windows-msvc.exe
+
+      - name: Upload files
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifacts: "output/*"
+          token: ${{ secrets.GITHUB_TOKEN }}

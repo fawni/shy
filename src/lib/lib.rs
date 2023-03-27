@@ -1,8 +1,7 @@
 use clap::ValueEnum;
-use miette::{Context, IntoDiagnostic};
+use miette::IntoDiagnostic;
 use once_cell::sync::OnceCell;
 use reqwest::Client;
-use roxmltree::Document;
 use serde::Deserialize;
 
 pub mod player;
@@ -153,20 +152,17 @@ impl From<String> for RepeatMode {
     }
 }
 
-fn get_port() -> miette::Result<String> {
-    let dir = dirs::config_dir().unwrap();
-    let file = fs_err::read_to_string(format!(
+#[derive(Deserialize)]
+struct PluginConfig {
+    port: String,
+}
+
+fn get_port() -> Result<String, Box<dyn std::error::Error>> {
+    let config_file = fs_err::read_to_string(format!(
         "{}\\MusicBee\\WWWServerconfig.xml",
-        dir.to_string_lossy()
-    ))
-    .into_diagnostic()
-    .wrap_err("mb_WWWServer::Config")?;
-    let doc = Document::parse(&file).into_diagnostic()?;
-    let port = Document::descendants(&doc)
-        .find(|n| n.has_tag_name("port"))
-        .and_then(|n| n.text())
-        .map(ToString::to_string)
-        .unwrap();
+        dirs::config_dir().unwrap().to_string_lossy()
+    ))?;
+    let port = serde_xml_rs::from_str::<PluginConfig>(&config_file)?.port;
 
     Ok(port)
 }
