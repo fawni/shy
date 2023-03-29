@@ -12,7 +12,7 @@ pub fn parse_duration(ms: i32) -> String {
     }
 }
 
-pub async fn parse_volume(amount: String) -> miette::Result<String> {
+pub async fn parse_volume(amount: &str) -> miette::Result<String> {
     let volume = NowPlaying::new().await?.volume;
     if amount.starts_with('+') {
         let current = (volume * 100.0) as u32;
@@ -31,11 +31,11 @@ pub async fn parse_volume(amount: String) -> miette::Result<String> {
                 .into_diagnostic()?;
         Ok(res.to_string())
     } else {
-        Ok(amount)
+        Ok(amount.into())
     }
 }
 
-pub async fn parse_position(amount: String) -> miette::Result<i32> {
+pub async fn parse_position(amount: &str) -> miette::Result<i32> {
     let np = NowPlaying::new().await?;
     let (pos, total) = (np.position, np.duration);
     if amount.ends_with('%') {

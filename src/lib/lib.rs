@@ -35,7 +35,7 @@ pub struct NowPlaying {
     pub file: String,
     pub playing: Option<PlayingStatus>,
     pub queued: bool,
-    pub repeat: Option<String>,
+    pub repeat: Option<RepeatMode>,
     pub scrobbling: bool,
     pub shuffle: bool,
     pub volume: f32,
@@ -53,7 +53,7 @@ impl NowPlaying {
         Ok(np)
     }
 
-    async fn with(client: &Client) -> miette::Result<Self> {
+    async fn with_client(client: &Client) -> miette::Result<Self> {
         let np = client
             .get(url!("NP"))
             .send()
@@ -67,7 +67,7 @@ impl NowPlaying {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone, Copy)]
 #[serde(rename_all = "lowercase")]
 pub enum PlayingStatus {
     Loading,
@@ -79,7 +79,7 @@ pub enum PlayingStatus {
     Unkown,
 }
 
-#[derive(Debug, Clone, Copy, ValueEnum)]
+#[derive(Debug, Clone, Copy, ValueEnum, Deserialize)]
 pub enum ShuffleMode {
     Off,
     On,
@@ -105,38 +105,39 @@ impl ShuffleMode {
 
     fn text(&self) -> String {
         match self {
-            Self::Off => String::from("OFF"),
-            Self::On => String::from("ON"),
+            Self::Off => "OFF".into(),
+            Self::On => "ON".into(),
         }
     }
 }
 
-#[derive(Debug, Clone, Copy, ValueEnum)]
+#[derive(Debug, Clone, Copy, ValueEnum, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum RepeatMode {
     /// Repeat off
-    Off,
+    None,
 
     /// Repeat queue
-    On,
+    All,
 
     /// Repeat track
-    One,
+    Single,
 }
 
 impl RepeatMode {
     const fn toggle(&self) -> Self {
         match self {
-            Self::Off => Self::On,
-            Self::On => Self::One,
-            Self::One => Self::Off,
+            Self::None => Self::All,
+            Self::All => Self::Single,
+            Self::Single => Self::None,
         }
     }
 
     fn text(&self) -> String {
         match self {
-            Self::Off => String::from("OFF"),
-            Self::On => String::from("ON"),
-            Self::One => String::from("ONE"),
+            Self::None => "OFF".into(),
+            Self::All => "ON".into(),
+            Self::Single => "ONE".into(),
         }
     }
 }
@@ -144,9 +145,9 @@ impl RepeatMode {
 impl From<String> for RepeatMode {
     fn from(s: String) -> Self {
         match &*s {
-            "none" | "off" => Self::Off,
-            "all" | "queue" | "on" => Self::On,
-            "single" | "track" | "one" => Self::One,
+            "none" | "off" => Self::None,
+            "all" | "queue" | "on" => Self::All,
+            "single" | "track" | "one" => Self::Single,
             _ => unreachable!(),
         }
     }

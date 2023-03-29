@@ -27,7 +27,7 @@ pub async fn queue() -> miette::Result<String> {
         .json::<Vec<NowPlaying>>()
         .await
         .into_diagnostic()?;
-    let np = NowPlaying::with(&client).await?;
+    let np = NowPlaying::with_client(&client).await?;
     let res = queue
         .iter()
         .enumerate()

@@ -71,9 +71,9 @@ pub async fn stop() -> miette::Result<String> {
 
 pub async fn next() -> miette::Result<String> {
     let client = Client::new();
-    let old = NowPlaying::with(&client).await?;
+    let old = NowPlaying::with_client(&client).await?;
     client.get(url!("C_NEXT")).send().await.into_diagnostic()?;
-    let np = NowPlaying::with(&client).await?;
+    let np = NowPlaying::with_client(&client).await?;
     let res = format!(
         "{} {} by {}\n{} {} by {}",
         glyphs::NEXT.red(),
@@ -89,9 +89,9 @@ pub async fn next() -> miette::Result<String> {
 
 pub async fn previous() -> miette::Result<String> {
     let client = Client::new();
-    let old = NowPlaying::with(&client).await?;
+    let old = NowPlaying::with_client(&client).await?;
     client.get(url!("C_PREV")).send().await.into_diagnostic()?;
-    let np = NowPlaying::with(&client).await?;
+    let np = NowPlaying::with_client(&client).await?;
 
     let res = format!(
         "{} {} by {}\n{} {} by {}",
@@ -109,13 +109,13 @@ pub async fn previous() -> miette::Result<String> {
 pub async fn volume(amount: Option<String>) -> miette::Result<String> {
     let res = if let Some(amount) = amount {
         let client = Client::new();
-        let volume = helper::parse_volume(amount).await?;
+        let volume = helper::parse_volume(&amount).await?;
         client
             .get(url!("C_VOL", &volume))
             .send()
             .await
             .into_diagnostic()?;
-        let volume = NowPlaying::with(&client).await?.volume * 100.0;
+        let volume = NowPlaying::with_client(&client).await?.volume * 100.0;
 
         volume.to_string()
     } else {
@@ -129,7 +129,7 @@ pub async fn volume(amount: Option<String>) -> miette::Result<String> {
 }
 
 pub async fn seek(amount: String) -> miette::Result<String> {
-    let pos = helper::parse_position(amount.clone()).await?.to_string();
+    let pos = helper::parse_position(&amount).await?.to_string();
     reqwest::get(url!("C_SEEK", &pos)).await.into_diagnostic()?;
     let res = if amount.ends_with('%') {
         format!("Set position to {}", amount.bold())
@@ -145,7 +145,7 @@ pub async fn shuffle(mode: Option<ShuffleMode>) -> miette::Result<String> {
     let mode = match mode {
         Some(mode) => mode,
         None => {
-            let current_mode = ShuffleMode::from(NowPlaying::with(&client).await?.shuffle);
+            let current_mode = NowPlaying::with_client(&client).await?.shuffle.into();
             ShuffleMode::toggle(&current_mode)
         }
     };
@@ -165,8 +165,10 @@ pub async fn repeat(mode: Option<RepeatMode>) -> miette::Result<String> {
     let mode = match mode {
         Some(mode) => mode,
         None => {
-            let current_mode =
-                RepeatMode::from(NowPlaying::with(&client).await?.repeat.unwrap_or_default());
+            let current_mode = NowPlaying::with_client(&client)
+                .await?
+                .repeat
+                .ok_or_else(|| miette!("Could not determine repeat mode"))?;
             RepeatMode::toggle(&current_mode)
         }
     };
@@ -195,7 +197,9 @@ async fn add_file(client: &Client, path: &str, next: bool) -> miette::Result<()>
         .send()
         .await
         .into_diagnostic()?;
-    let name = Path::file_name(Path::new(path)).unwrap().to_string_lossy();
+    let name = Path::file_name(Path::new(path))
+        .ok_or_else(|| miette!("Could not get file name"))?
+        .to_string_lossy();
 
     Ok(info!("Added \"{name}\""))
 }
@@ -204,12 +208,14 @@ async fn add_directory(client: &Client, path: &str, next: bool) -> miette::Resul
     for file in fs_err::read_dir(path).into_diagnostic()? {
         let path = file.into_diagnostic()?.path();
         let ext = match &path.extension() {
-            Some(ext) => ext.to_str().unwrap(),
+            Some(ext) => ext
+                .to_str()
+                .ok_or_else(|| miette!("Could not convert extension to str"))?,
             None => continue,
         };
 
         if VALID_FORMATS.contains(&ext) {
-            add_file(client, path.to_str().unwrap(), next).await?;
+            add_file(client, &path.to_string_lossy(), next).await?;
         }
     }
 
