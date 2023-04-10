@@ -1,3 +1,5 @@
+pub use tokio::main;
+
 use clap::ValueEnum;
 use miette::IntoDiagnostic;
 use once_cell::sync::OnceCell;
@@ -24,6 +26,8 @@ static VALID_FORMATS: [&str; 29] = [
     "ogv", "oga", "ogx", "ogm", "spx", "opus", "flac", "caf", "ape", "wv", "wma", "wav", "wave",
     "mid", "mod", "xm",
 ];
+
+pub type Playlist = Vec<NowPlaying>;
 
 #[derive(Deserialize, Debug)]
 pub struct NowPlaying {
@@ -159,10 +163,11 @@ struct PluginConfig {
 }
 
 fn get_port() -> Result<String, Box<dyn std::error::Error>> {
-    let config_file = fs_err::read_to_string(format!(
+    let config_path = format!(
         "{}\\MusicBee\\WWWServerconfig.xml",
         dirs::config_dir().unwrap().to_string_lossy()
-    ))?;
+    );
+    let config_file = fs_err::read_to_string(config_path)?;
     let port = serde_xml_rs::from_str::<PluginConfig>(&config_file)?.port;
 
     Ok(port)

@@ -9,12 +9,13 @@ use shy::{
 
 mod args;
 
-#[tokio::main]
+#[shy::main]
 async fn main() -> miette::Result<()> {
     #[cfg(windows)]
     enable_windows_virtual_terminal();
 
     match args::ShyArgs::parse().command {
+        ShyCommand::Start(_) => start().await,
         ShyCommand::Play(_) => play().await,
         ShyCommand::Stop(_) => stop().await,
         ShyCommand::Next(_) => next().await,
@@ -28,6 +29,12 @@ async fn main() -> miette::Result<()> {
         ShyCommand::Shuffle(args) => shuffle(args).await,
         ShyCommand::Repeat(args) => repeat(args).await,
     }
+}
+
+async fn start() -> miette::Result<()> {
+    let res = command::start().await?;
+
+    Ok(println!("{res}"))
 }
 
 async fn add(add_args: Add) -> miette::Result<()> {

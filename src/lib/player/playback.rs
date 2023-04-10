@@ -1,7 +1,7 @@
 use miette::IntoDiagnostic;
 use owo_colors::OwoColorize;
 
-use crate::{fmt, glyphs, helper::parse_duration, url, NowPlaying};
+use crate::{fmt, glyphs, helper::parse_duration, url, NowPlaying, Playlist};
 
 pub async fn nowplaying() -> miette::Result<String> {
     let np = NowPlaying::new().await?;
@@ -24,7 +24,7 @@ pub async fn queue() -> miette::Result<String> {
         .send()
         .await
         .into_diagnostic()?
-        .json::<Vec<NowPlaying>>()
+        .json::<Playlist>()
         .await
         .into_diagnostic()?;
     let np = NowPlaying::with_client(&client).await?;

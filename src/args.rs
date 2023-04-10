@@ -11,6 +11,7 @@ pub struct ShyArgs {
 
 #[derive(Subcommand)]
 pub enum ShyCommand {
+    Start(Start),
     Play(Play),
     Stop(Stop),
     Next(Next),
@@ -24,6 +25,10 @@ pub enum ShyCommand {
     Shuffle(Shuffle),
     Repeat(Repeat),
 }
+
+/// Start the MusicBee player
+#[derive(Args)]
+pub struct Start {}
 
 /// Play or pause the current track
 #[derive(Args)]

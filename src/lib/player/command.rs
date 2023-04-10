@@ -8,13 +8,21 @@ use crate::{
     glyphs, helper, info, url, NowPlaying, PlayingStatus, RepeatMode, ShuffleMode, VALID_FORMATS,
 };
 
+pub async fn start() -> miette::Result<String> {
+    tokio::task::spawn_blocking(|| -> miette::Result<()> {
+        // TODO: Don't hardcode path somehow. this probably won't work on 32bit systems or msstore version
+        tokio::process::Command::new(r"C:\Program Files (x86)\MusicBee\MusicBee.exe")
+            .spawn()
+            .into_diagnostic()?;
+        Ok(())
+    });
+
+    Ok(format!("{} Started MusicBee", glyphs::START.green()))
+}
+
 pub async fn add(path: &str, next: bool) -> miette::Result<()> {
     let client = Client::new();
-    if fs_err::tokio::metadata(path)
-        .await
-        .into_diagnostic()?
-        .is_dir()
-    {
+    if Path::new(path).is_dir() {
         add_directory(&client, path, next).await?;
     } else {
         add_file(&client, path, next).await?;
