@@ -35,7 +35,7 @@ pub async fn queue() -> miette::Result<String> {
             let prefix = if np.file == track.file {
                 format!("{} ", glyphs::PLAY.green())
             } else {
-                format!("{i}.")
+                format!("{i:02}.")
             };
 
             format!("{} {} by {}\n", prefix, track.title.bold(), track.artist)
