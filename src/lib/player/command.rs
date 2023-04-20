@@ -17,7 +17,7 @@ pub async fn start() -> miette::Result<String> {
         Ok(())
     });
 
-    Ok(format!("{} Started MusicBee", glyphs::START.green()))
+    Ok("Started MusicBee".to_owned())
 }
 
 pub async fn add(path: &str, next: bool) -> miette::Result<()> {

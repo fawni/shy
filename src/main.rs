@@ -34,7 +34,7 @@ async fn main() -> miette::Result<()> {
 async fn start() -> miette::Result<()> {
     let res = command::start().await?;
 
-    Ok(println!("{res}"))
+    Ok(info!("{res}"))
 }
 
 async fn add(add_args: Add) -> miette::Result<()> {

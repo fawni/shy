@@ -1,4 +1,3 @@
-pub const START: &str = "";
 pub const PLAY: &str = "";
 pub const PAUSE: &str = "";
 pub const STOP: &str = "";
