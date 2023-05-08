@@ -29,6 +29,13 @@ jobs:
       - name: Build
         run: cargo build --target x86_64-pc-windows-msvc --release --locked
 
+      - name: Run UPX
+        uses: crazy-max/ghaction-upx@v2
+        with:
+          version: latest
+          files: ./target/x86_64-pc-windows-msvc/release/shy.exe
+          args: -9q
+
       - name: Rename files
         env:
           VERSION: ${{ github.ref_name }}
