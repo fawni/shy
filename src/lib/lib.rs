@@ -57,7 +57,7 @@ impl NowPlaying {
         Ok(np)
     }
 
-    async fn with_client(client: &Client) -> miette::Result<Self> {
+    async fn with(client: &Client) -> miette::Result<Self> {
         let np = client
             .get(url!("NP"))
             .send()
@@ -162,13 +162,15 @@ struct PluginConfig {
     port: String,
 }
 
-fn get_port() -> Result<String, Box<dyn std::error::Error>> {
+fn get_port() -> miette::Result<String> {
     let config_path = format!(
         "{}\\MusicBee\\WWWServerconfig.xml",
         dirs::config_dir().unwrap().to_string_lossy()
     );
-    let config_file = fs_err::read_to_string(config_path)?;
-    let port = serde_xml_rs::from_str::<PluginConfig>(&config_file)?.port;
+    let config_file = fs_err::read_to_string(config_path).into_diagnostic()?;
+    let port = serde_xml_rs::from_str::<PluginConfig>(&config_file)
+        .into_diagnostic()?
+        .port;
 
     Ok(port)
 }

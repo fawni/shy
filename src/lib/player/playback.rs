@@ -27,7 +27,7 @@ pub async fn queue() -> miette::Result<String> {
         .json::<Playlist>()
         .await
         .into_diagnostic()?;
-    let np = NowPlaying::with_client(&client).await?;
+    let np = NowPlaying::with(&client).await?;
     let res = queue
         .iter()
         .enumerate()
@@ -38,7 +38,20 @@ pub async fn queue() -> miette::Result<String> {
                 format!("{i:02}.")
             };
 
-            format!("{} {} by {}\n", prefix, track.title.bold(), track.artist)
+            // format!("{} {} by {}\n", prefix, track.title.bold(), track.artist)
+            if i == 0 {
+                let (pos, total) = (np.position, np.duration);
+                format!(
+                    "{} {} by {} | {} {}%\n",
+                    prefix,
+                    track.title.bold(),
+                    track.artist,
+                    pb(pos, total),
+                    (pos as f32 / total as f32 * 100.0) as u32
+                )
+            } else {
+                format!("{} {} by {}\n", prefix, track.title.bold(), track.artist)
+            }
         })
         .collect::<String>();
 

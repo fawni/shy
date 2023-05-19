@@ -79,9 +79,9 @@ pub async fn stop() -> miette::Result<String> {
 
 pub async fn next() -> miette::Result<String> {
     let client = Client::new();
-    let old = NowPlaying::with_client(&client).await?;
+    let old = NowPlaying::with(&client).await?;
     client.get(url!("C_NEXT")).send().await.into_diagnostic()?;
-    let np = NowPlaying::with_client(&client).await?;
+    let np = NowPlaying::with(&client).await?;
     let res = format!(
         "{} {} by {}\n{} {} by {}",
         glyphs::NEXT.red(),
@@ -97,9 +97,9 @@ pub async fn next() -> miette::Result<String> {
 
 pub async fn previous() -> miette::Result<String> {
     let client = Client::new();
-    let old = NowPlaying::with_client(&client).await?;
+    let old = NowPlaying::with(&client).await?;
     client.get(url!("C_PREV")).send().await.into_diagnostic()?;
-    let np = NowPlaying::with_client(&client).await?;
+    let np = NowPlaying::with(&client).await?;
 
     let res = format!(
         "{} {} by {}\n{} {} by {}",
@@ -123,7 +123,7 @@ pub async fn volume(amount: Option<String>) -> miette::Result<String> {
             .send()
             .await
             .into_diagnostic()?;
-        let volume = NowPlaying::with_client(&client).await?.volume * 100.0;
+        let volume = NowPlaying::with(&client).await?.volume * 100.0;
 
         volume.to_string()
     } else {
@@ -153,7 +153,7 @@ pub async fn shuffle(mode: Option<ShuffleMode>) -> miette::Result<String> {
     let mode = match mode {
         Some(mode) => mode,
         None => {
-            let current_mode = NowPlaying::with_client(&client).await?.shuffle.into();
+            let current_mode = NowPlaying::with(&client).await?.shuffle.into();
             ShuffleMode::toggle(&current_mode)
         }
     };
@@ -173,7 +173,7 @@ pub async fn repeat(mode: Option<RepeatMode>) -> miette::Result<String> {
     let mode = match mode {
         Some(mode) => mode,
         None => {
-            let current_mode = NowPlaying::with_client(&client)
+            let current_mode = NowPlaying::with(&client)
                 .await?
                 .repeat
                 .ok_or_else(|| miette!("Could not determine repeat mode"))?;
