@@ -2,7 +2,9 @@
 
 > A command line remote controller for MusicBee!
 
-requires the MusicBee web server plugin [mb_WWWserver](https://github.com/fawni/mb_WWWserver) to be installed.
+<img src=".github/assets/tape.gif" width="85%"></img>
+
+⚠️ Requires the MusicBee web server plugin [mb_WWWserver](https://github.com/fawni/mb_WWWserver) to be installed.
 
 ## Installation
 
