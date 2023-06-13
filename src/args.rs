@@ -24,6 +24,7 @@ pub enum ShyCommand {
     Seek(Seek),
     Shuffle(Shuffle),
     Repeat(Repeat),
+    Info(Info),
 }
 
 /// Start the MusicBee player
@@ -110,4 +111,9 @@ pub struct Repeat {
     /// Repeat mode to set. If not provided, the current repeat mode will toggle to the next mode
     #[arg(value_enum)]
     pub mode: Option<RepeatMode>,
+}
+
+#[derive(Args)]
+pub struct Info {
+    pub track: Option<String>,
 }

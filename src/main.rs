@@ -1,4 +1,4 @@
-use args::{Add, Repeat, Seek, Shuffle, ShyCommand, Volume};
+use args::{Add, Info, Repeat, Seek, Shuffle, ShyCommand, Volume};
 use clap::Parser;
 use owo_colors::OwoColorize;
 
@@ -28,6 +28,7 @@ async fn main() -> miette::Result<()> {
         ShyCommand::Seek(args) => seek(args).await,
         ShyCommand::Shuffle(args) => shuffle(args).await,
         ShyCommand::Repeat(args) => repeat(args).await,
+        ShyCommand::Info(args) => info(args).await,
     }
 }
 
@@ -115,6 +116,13 @@ async fn repeat(repeat_args: Repeat) -> miette::Result<()> {
     let res = command::repeat(mode).await?;
 
     Ok(info!("Repeat: {}", res.bold()))
+}
+
+async fn info(info_args: Info) -> miette::Result<()> {
+    let track = info_args.track;
+    let res = playback::info(track).await?;
+
+    Ok(println!("{res}"))
 }
 
 #[cfg(windows)]
