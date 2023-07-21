@@ -74,18 +74,19 @@ pub async fn info(track: Option<String>) -> miette::Result<String> {
     let h = (duration / 60) / 60;
     let m = (duration / 60) % 60;
     let s = duration % 60;
-    let time = match h {
-        0 => format!("{:02}:{:02}", m, s),
-        _ => format!("{:02}:{:02}:{:02}", h, m, s),
+    let time = if h == 0 {
+        format!("{m:02}:{s:02}")
+    } else {
+        format!("{h:02}:{m:02}:{s:02}")
     };
 
     Ok(format!(
         "{} ({} of {})\n{}\n{} ({})\n{:?} {} kHz, {}k, {}",
-        tag.title().unwrap_or("-".into()).bold(),
+        tag.title().unwrap_or_else(|| "-".into()).bold(),
         tag.track().unwrap_or(0),
         tag.track_total().unwrap_or(0),
-        tag.artist().unwrap_or("-".into()),
-        tag.album().unwrap_or("-".into()),
+        tag.artist().unwrap_or_else(|| "-".into()),
+        tag.album().unwrap_or_else(|| "-".into()),
         tag.year().unwrap_or(0),
         tagged_file.file_type(),
         properties.sample_rate().unwrap() as f32 / 1000.0,

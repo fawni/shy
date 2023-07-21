@@ -150,12 +150,11 @@ pub async fn seek(amount: String) -> miette::Result<String> {
 
 pub async fn shuffle(mode: Option<ShuffleMode>) -> miette::Result<String> {
     let client = Client::new();
-    let mode = match mode {
-        Some(mode) => mode,
-        None => {
-            let current_mode = NowPlaying::with(&client).await?.shuffle.into();
-            ShuffleMode::toggle(&current_mode)
-        }
+    let mode = if let Some(m) = mode {
+        m
+    } else {
+        let current_mode = NowPlaying::with(&client).await?.shuffle.into();
+        ShuffleMode::toggle(current_mode)
     };
 
     let path = (mode as u8).to_string();
@@ -170,15 +169,14 @@ pub async fn shuffle(mode: Option<ShuffleMode>) -> miette::Result<String> {
 
 pub async fn repeat(mode: Option<RepeatMode>) -> miette::Result<String> {
     let client = Client::new();
-    let mode = match mode {
-        Some(mode) => mode,
-        None => {
-            let current_mode = NowPlaying::with(&client)
-                .await?
-                .repeat
-                .ok_or_else(|| miette!("Could not determine repeat mode"))?;
-            RepeatMode::toggle(&current_mode)
-        }
+    let mode = if let Some(m) = mode {
+        m
+    } else {
+        let current_mode = NowPlaying::with(&client)
+            .await?
+            .repeat
+            .ok_or_else(|| miette!("Could not determine repeat mode"))?;
+        RepeatMode::toggle(current_mode)
     };
 
     let path = (mode as u8).to_string();

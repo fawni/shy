@@ -1,7 +1,7 @@
 use clap::{Args, Parser, Subcommand};
 use shy::{RepeatMode, ShuffleMode};
 
-/// A command line remote controller for MusicBee
+/// A command line remote controller for `MusicBee`
 #[derive(Parser)]
 #[command(arg_required_else_help = true)]
 pub struct ShyArgs {
@@ -27,7 +27,7 @@ pub enum ShyCommand {
     Info(Info),
 }
 
-/// Start the MusicBee player
+/// Start the `MusicBee` player
 #[derive(Args)]
 pub struct Start {}
 

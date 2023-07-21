@@ -16,7 +16,7 @@ mod log;
 pub fn api_base() -> &'static String {
     static API_BASE: OnceCell<String> = OnceCell::new();
     API_BASE.get_or_init(|| {
-        let port = get_port().unwrap_or(8080.to_string());
+        let port = get_port().unwrap_or_else(|_| 8080.to_string());
         format!("http://localhost:{port}")
     })
 }
@@ -100,14 +100,14 @@ impl From<bool> for ShuffleMode {
 }
 
 impl ShuffleMode {
-    const fn toggle(&self) -> Self {
+    const fn toggle(self) -> Self {
         match self {
             Self::Off => Self::On,
             Self::On => Self::Off,
         }
     }
 
-    fn text(&self) -> String {
+    fn text(self) -> String {
         match self {
             Self::Off => "OFF".into(),
             Self::On => "ON".into(),
@@ -129,7 +129,7 @@ pub enum RepeatMode {
 }
 
 impl RepeatMode {
-    const fn toggle(&self) -> Self {
+    const fn toggle(self) -> Self {
         match self {
             Self::None => Self::All,
             Self::All => Self::Single,
@@ -137,7 +137,7 @@ impl RepeatMode {
         }
     }
 
-    fn text(&self) -> String {
+    fn text(self) -> String {
         match self {
             Self::None => "OFF".into(),
             Self::All => "ON".into(),
@@ -163,10 +163,20 @@ struct PluginConfig {
 }
 
 fn get_port() -> miette::Result<String> {
-    let config_path = format!(
-        "{}\\MusicBee\\WWWServerconfig.xml",
-        dirs::config_dir().unwrap().to_string_lossy()
-    );
+    let paths: [String; 2] = [
+        format!(
+            "{}\\scoop\\persist\\musicbee\\AppData\\WWWServerconfig.xml",
+            dirs::home_dir().unwrap().to_string_lossy()
+        ),
+        format!(
+            "{}\\MusicBee\\WWWServerconfig.xml",
+            dirs::config_dir().unwrap().to_string_lossy()
+        ),
+    ];
+    let config_path = paths
+        .iter()
+        .find(|path| std::path::Path::new(path).exists())
+        .unwrap();
     let config_file = fs_err::read_to_string(config_path).into_diagnostic()?;
     let port = serde_xml_rs::from_str::<PluginConfig>(&config_file)
         .into_diagnostic()?
