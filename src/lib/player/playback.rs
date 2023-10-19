@@ -39,19 +39,23 @@ pub async fn queue() -> miette::Result<String> {
                 format!("{i:02}.")
             };
 
-            // format!("{} {} by {}\n", prefix, track.title.bold(), track.artist)
             if i == 0 {
                 let (pos, total) = (np.position, np.duration);
                 format!(
-                    "{} {} by {} | {} {}%\n",
+                    "{} {} :: {} | {} {}%\n",
                     prefix,
-                    track.title.bold(),
-                    track.artist,
+                    track.title.bold().cyan(),
+                    track.artist.purple(),
                     pb(pos, total),
                     (pos as f32 / total as f32 * 100.0) as u32
                 )
             } else {
-                format!("{} {} by {}\n", prefix, track.title.bold(), track.artist)
+                format!(
+                    "{} {} :: {}\n",
+                    prefix,
+                    track.title.bold().cyan(),
+                    track.artist.purple()
+                )
             }
         })
         .collect::<String>();

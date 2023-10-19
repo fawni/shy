@@ -1,11 +1,11 @@
-use args::{Add, Info, Repeat, Seek, Shuffle, ShyCommand, Volume};
 use clap::Parser;
 use owo_colors::OwoColorize;
-
 use shy::{
     info,
     player::{command, playback},
 };
+
+use args::{Add, Info, Repeat, Seek, Shuffle, ShyCommand, Volume};
 
 mod args;
 

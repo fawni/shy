@@ -125,7 +125,7 @@ pub async fn volume(amount: Option<String>) -> miette::Result<String> {
             .into_diagnostic()?;
         let volume = NowPlaying::with(&client).await?.volume * 100.0;
 
-        volume.to_string()
+        format!("{:.0}", volume)
     } else {
         let np = NowPlaying::new().await?;
         let volume = (np.volume * 100.0) as u8;
