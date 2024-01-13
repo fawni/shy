@@ -1,8 +1,21 @@
-use clap::{Args, Parser, Subcommand};
+use clap::{
+    builder::{styling::AnsiColor, Styles},
+    Args, Parser, Subcommand,
+};
 use shy::{RepeatMode, ShuffleMode};
 
-/// A command line remote controller for `MusicBee`
+// legacy yellow and green clap style
+fn clap_style() -> Styles {
+    Styles::styled()
+        .header(AnsiColor::Yellow.on_default())
+        .usage(AnsiColor::Yellow.on_default())
+        .literal(AnsiColor::Green.on_default())
+        .placeholder(AnsiColor::Green.on_default())
+}
+
+/// A command line remote controller for MusicBee
 #[derive(Parser)]
+#[clap(version, author, styles = clap_style())]
 #[command(arg_required_else_help = true)]
 pub struct ShyArgs {
     #[command(subcommand)]
@@ -27,7 +40,7 @@ pub enum ShyCommand {
     Info(Info),
 }
 
-/// Start the `MusicBee` player
+/// Start the MusicBee player
 #[derive(Args)]
 pub struct Start {}
 
