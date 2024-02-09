@@ -3,6 +3,7 @@ use owo_colors::OwoColorize;
 use shy::{
     info,
     player::{command, playback},
+    RepeatMode,
 };
 
 use args::{Add, Info, Repeat, Seek, Shuffle, ShyCommand, Volume};
@@ -112,7 +113,7 @@ async fn shuffle(shuffle_args: Shuffle) -> miette::Result<()> {
 }
 
 async fn repeat(repeat_args: Repeat) -> miette::Result<()> {
-    let mode = repeat_args.mode;
+    let mode = repeat_args.mode.and_then(|m| RepeatMode::try_from(m).ok());
     let res = command::repeat(mode).await?;
 
     Ok(info!("Repeat: {}", res.bold()))

@@ -146,15 +146,21 @@ impl RepeatMode {
     }
 }
 
-impl From<String> for RepeatMode {
-    fn from(s: String) -> Self {
-        match &*s {
-            "none" | "off" => Self::None,
-            "all" | "queue" | "on" => Self::All,
-            "single" | "track" | "one" => Self::Single,
-            _ => unreachable!(),
+impl TryFrom<String> for RepeatMode {
+    type Error = RepeatModeError;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        match &*value {
+            "none" | "off" => Ok(Self::None),
+            "all" | "queue" | "on" => Ok(Self::All),
+            "single" | "track" | "one" => Ok(Self::Single),
+            _ => Err(Self::Error::InvalidMode),
         }
     }
+}
+
+pub enum RepeatModeError {
+    InvalidMode,
 }
 
 #[derive(Deserialize)]

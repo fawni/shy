@@ -1,8 +1,8 @@
 use clap::{
-    builder::{styling::AnsiColor, Styles},
+    builder::{styling::AnsiColor, PossibleValue, Styles},
     Args, Parser, Subcommand,
 };
-use shy::{RepeatMode, ShuffleMode};
+use shy::ShuffleMode;
 
 // legacy yellow and green clap style
 fn clap_style() -> Styles {
@@ -84,7 +84,7 @@ pub struct Clear {}
 
 /// Display the current playing track
 #[derive(Args)]
-#[command(visible_aliases = ["np"])]
+#[command(name = "now", visible_aliases = ["np"])]
 pub struct NowPlaying {}
 
 /// Display the current queue
@@ -122,8 +122,10 @@ pub struct Shuffle {
 #[command(visible_aliases = ["loop", "r"])]
 pub struct Repeat {
     /// Repeat mode to set. If not provided, the current repeat mode will toggle to the next mode
-    #[arg(value_enum)]
-    pub mode: Option<RepeatMode>,
+    #[arg(value_parser=[PossibleValue::new("none").alias("off").help("Turn off loop, aliases: off"),
+        PossibleValue::new("all").aliases(["queue", "on"]).help("Loop entire queue, aliases: queue, on"),
+        PossibleValue::new("single").aliases(["track", "one"]).help("Loop current track, aliases: track, one")])]
+    pub mode: Option<String>,
 }
 
 #[derive(Args)]
